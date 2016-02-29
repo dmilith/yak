@@ -1,0 +1,9 @@
+[package]
+name = "yak"
+version = "0.1.0"
+authors = ["Daniel (dmilith) Dettlaff <dmilith@me.com>"]
+
+[dependencies]
+walkdir = "0.1"
+nickel = "*"
+# websocket = "0.15.0"
