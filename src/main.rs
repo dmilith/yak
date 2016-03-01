@@ -3,17 +3,20 @@
 extern crate walkdir;
 extern crate cld2;
 extern crate encoding;
+extern crate ammonia;
 
+use ammonia::*;
 use cld2::{detect_language, Format, Reliable, Lang};
 use encoding::*;
 use encoding::all::*;
+use walkdir::*; //{DirEntry, WalkDir, WalkDirIterator};
 
 use std::env;
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::fs::File;
 use std::path::Path;
-use walkdir::*; //{DirEntry, WalkDir, WalkDirIterator};
+use std::collections::{HashSet};
 
 
 fn detect_encoding(vec: &Vec<u8>) -> Option<EncodingRef> {
@@ -62,22 +65,44 @@ fn detect_encoding(vec: &Vec<u8>) -> Option<EncodingRef> {
 }
 
 
+fn read_fragment<R>(reader: R, bytes_to_read: u64) -> Option<Vec<u8>> where R: Read {
+    let mut buf = vec![];
+    let mut chunk = reader.take(bytes_to_read);
+    match chunk.read_to_end(&mut buf) {
+        Ok(_) =>
+            Some(buf),
+        _ =>
+            None,
+    }
+}
+
+
+
 fn process_file(name: &str, f: &File) {
-    let bytes_to_read = 8192u16;
-
-    let mut reader = BufReader::new(f);
-    let mut buffer = Vec::new();
-
     if  name.ends_with(".php") ||
         name.ends_with(".txt") ||
         name.ends_with(".py") ||
+        name.ends_with(".inc") ||
+        name.ends_with(".html") ||
         name.ends_with(".pl") {
 
-        match reader.read_until(bytes_to_read as u8, &mut buffer) {
-            Ok(size) => {
-                match detect_encoding(&mut buffer) {
+        let bytes_to_read = 8192u64;
+        let mut reader = BufReader::new(f);
+
+        match read_fragment(&mut reader, bytes_to_read) {
+            Some(binary_content) => {
+                let size = -1; /* XXX */
+
+                match detect_encoding(&binary_content) {
                     Some(enc) => {
-                        let buf = String::from_utf8_lossy(&mut buffer);
+                        /* html tag cleaner PoC: */
+                        let a_buf = String::from_utf8_lossy(&binary_content);
+                        let cleaner = Ammonia{
+                            tags: HashSet::new(),
+                            .. Ammonia::default()
+                        };
+                        let buf = cleaner.clean(&a_buf);
+
                         match detect_language(&buf, Format::Text) {
                             (Some(Lang(lang)), Reliable) =>
                                 println!("Reliable detection: {}, lang: {:?}, encoding: {}, size: {}",
@@ -101,8 +126,8 @@ fn process_file(name: &str, f: &File) {
                 }
             },
 
-            Err(err) =>
-                println!("Error reading file! {:?}", err),
+            None =>
+                println!("Error reading file!"),
         }
     }
 }
