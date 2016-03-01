@@ -8,6 +8,7 @@ use cld2::{detect_language, Format, Reliable, Lang};
 use encoding::*;
 use encoding::all::*;
 
+use std::env;
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::fs::File;
@@ -60,10 +61,10 @@ fn detect_encoding(vec: &Vec<u8>) -> Option<EncodingRef> {
     None
 }
 
-fn handle_file(path: &Path) {
+
+fn process_file(name: &str, f: &File) {
     let bytes_to_read = 8192u16;
-    let name = path.to_str().unwrap();
-    let f = File::open(name).unwrap();
+
     let mut reader = BufReader::new(f);
     let mut buffer = Vec::new();
 
@@ -103,6 +104,16 @@ fn handle_file(path: &Path) {
             Err(err) =>
                 println!("Error reading file! {:?}", err),
         }
+    }
+}
+
+
+fn handle_file(path: &Path) {
+    let name = path.to_str().unwrap();
+
+    match File::open(name) {
+        Ok(f) => process_file(name, &f),
+        Err(e) => println!("Error in file IO: {:?}", e),
     }
 }
 
