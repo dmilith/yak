@@ -3,8 +3,14 @@ name = "yak"
 version = "0.1.0"
 authors = ["Daniel (dmilith) Dettlaff <dmilith@me.com>"]
 
+
 [dependencies]
 walkdir = "0.1"
 encoding = "0.2.32"
 nickel = "*"
 # websocket = "0.15.0"
+
+
+# language detection:
+[dependencies.cld2]
+git = "git://github.com/emk/rust-cld2"
