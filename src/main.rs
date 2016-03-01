@@ -107,11 +107,27 @@ fn handle_file(path: &Path) {
 }
 
 
+fn read_path_from_env() -> String {
+    let key = "HOME";
+    let home = match env::var(key) {
+        Ok(val) => val,
+        Err(_) => String::from("/tmp/"),
+    };
+    let key = "TRAV";
+    match env::var(key) {
+        Ok(val) => val,
+        Err(_) => home, /* use ~ as fallback if no value of TRAVERSE given */
+    }
+}
+
+
 fn main() {
     let text = "Młody Amadeusz szedł suchą szosą.";
     println!("{:?}", detect_language(text, Format::Text));
 
-    let walker = WalkDir::new("/Users/dmilith/tmp/Pismak/")
+    let path = read_path_from_env();
+    println!("Traversing path: {:?}", path);
+    let walker = WalkDir::new(path)
         .follow_links(false)
         .max_depth(3)
         .max_open(128)
