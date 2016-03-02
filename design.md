@@ -2,18 +2,8 @@
 
 ### Changeset diff: (used in: fs_diffs ordered set/subset)
     * file_path - file path (file name preceded with path relative to domain dir, f.e.: "include/mypage.php")
-    * file_info - FileInfo structure
+    * file_info - file metadata structure (File::metadata())
     *
-
-### enum FIleACL:
-    TODO: (stage 2)
-
-### enum FileMode:
-    TODO: (stage: 2)
-
-### FileInfo:
-    mode: FileMode
-    acls: FileACL:: (..)
 
 ### enum Interpreters:
     * Php52
