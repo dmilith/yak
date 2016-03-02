@@ -6,10 +6,14 @@ authors = ["Daniel (dmilith) Dettlaff <dmilith@me.com>"]
 
 [dependencies]
 walkdir = "0.1"
-encoding = "0.2.32"
-nickel = "*"
-ammonia = "0.1.1"
+encoding = "0.2"
+ammonia = "0.1"
 time = "0.1"
+regex = "0.1"
+sha1 = "0.1"
+lazy_static = "0.1.15"
+rustc-serialize = "0.3.18"
+# nickel = "*"
 # websocket = "0.15.0"
 
 
