@@ -17,6 +17,7 @@ use std::io::BufReader;
 use std::fs::File;
 use std::path::Path;
 use std::collections::{HashSet};
+use std::os::unix::fs::MetadataExt;
 
 
 fn detect_encoding(vec: &Vec<u8>) -> Option<EncodingRef> {
@@ -87,7 +88,7 @@ fn process_file(name: &str, f: &File) {
         name.ends_with(".pl") {
 
         let bytes_to_read = 8192u64;
-        let size = f.metadata().unwrap().len();
+        let metadata = f.metadata().unwrap();
         let mut reader = BufReader::new(f);
 
         match read_fragment(&mut reader, bytes_to_read) {
@@ -104,20 +105,20 @@ fn process_file(name: &str, f: &File) {
 
                         match detect_language(&buf, Format::Text) {
                             (Some(Lang(lang)), Reliable) =>
-                                println!("Reliable detection: {}, lang: {:?}, encoding: {}, size: {}",
-                                    name, lang, enc.name(), size),
+                                println!("Reliable detection: {}, lang: {:?}, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?}",
+                                    name, lang, enc.name(), metadata.size(), metadata.uid(), metadata.gid(), metadata.mode(), metadata.mtime()),
 
                             (Some(Lang(lang)), _) =>
-                                println!("Unreliable detection: {}, lang: {:?}, encoding: {}, size: {}",
-                                    name, lang, enc.name(), size),
+                                println!("Unreliable detection: {}, lang: {:?}, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?}",
+                                    name, lang, enc.name(), metadata.size(), metadata.uid(), metadata.gid(), metadata.mode(), metadata.mtime()),
 
                             (None, Reliable) =>
-                                println!("Reliable no detection: {}, lang: Unknown, encoding: {}, size: {}",
-                                    name, enc.name(), size),
+                                println!("Reliable no detection: {}, lang: Unknown, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?}",
+                                    name, enc.name(), metadata.size(), metadata.uid(), metadata.gid(), metadata.mode(), metadata.mtime()),
 
                             (None, _) => /* not detected properly or value isn't reliable enough to tell */
-                                println!("Unreliable no detection: {}, lang: Unknown, encoding: {}, size: {}",
-                                    name, enc.name(), size),
+                                println!("Unreliable no detection: {}, lang: Unknown, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?}",
+                                    name, enc.name(), metadata.size(), metadata.uid(), metadata.gid(), metadata.mode(), metadata.mtime()),
                         }
                     },
 
