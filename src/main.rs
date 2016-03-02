@@ -6,7 +6,7 @@ extern crate encoding;
 extern crate ammonia;
 extern crate time;
 
-use time::get_time;
+use time::*;
 use ammonia::*;
 use cld2::{detect_language, Format, Reliable, Lang};
 use encoding::*;
@@ -165,6 +165,8 @@ fn main() {
 
     let path = read_path_from_env();
     println!("Traversing path: {:?}", path);
+
+    let start = precise_time_ns();
     let walker = WalkDir::new(path)
         .follow_links(false)
         .max_depth(3)
@@ -176,6 +178,9 @@ fn main() {
             handle_file(entry.path());
         }
     }
+
+    let end = precise_time_ns();
+    println!("Traverse took: {} ms to complete", (end - start)/1000/1000);
 
     // let mut server = Nickel::new();
     // server.utilize(router! {
