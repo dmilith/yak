@@ -140,7 +140,7 @@ fn strip_html_tags(binary_content: &Vec<u8>) -> String {
 
 fn process_file(name: &str, f: &File) {
     if valid_file_extensions(name) {
-        let bytes_to_read = 8192u64;
+        let bytes_to_read = 16384u64;
         let metadata = f.metadata().unwrap();
         let mut reader = BufReader::new(f);
 
