@@ -91,8 +91,7 @@ fn valid_file_extensions(name: &str) -> bool {
         Regex will be compiled when it's used for the first time
         On subsequent uses, it will reuse the previous compilation
         */
-        static ref RE: Regex = Regex::new(
-            r"\.(php[0-9]*|?htm[l0-9]*|txt|inc|py|pl|rb|sh|?ml|htaccess|rss|?css|js|mo|po|ini)$").unwrap();
+        static ref RE: Regex = Regex::new(r"\.(php[0-9]*|[s]?htm[l0-9]*|txt|inc|py|pl|rb|sh|[xyua]ml|htaccess|rss|[s]?css|js|mo|po|ini|ps|l?a?tex)$").unwrap();
     }
     RE.is_match(name)
 }
@@ -101,18 +100,12 @@ fn valid_file_extensions(name: &str) -> bool {
 #[test]
 fn matcher_test() {
     for valid in vec!(
-        "somestrange123.file.php",
-        ".txt",
-        "a.txt",
-        "file.html",
-        "file.htm4",
-        "exym.pl",
-        "404.shtml",
-        "album.rss"
+        "somestrange123.file.php", ".htm", "a.txt", "file.html", "file.htm4",
+        "exym.pl", "404.shtml", "album.rss", "a.ps", "a.latex", "mr.tex"
     ) {
         assert!(valid_file_extensions(valid));
     }
-    for invalid in vec!("file.plo", "file.pyc", ".phpa", "somefile") {
+    for invalid in vec!("file.plo", "file.pyc", ".phpa", "somefile", "file.pshtml") {
         assert!(!valid_file_extensions(invalid));
     }
 }
