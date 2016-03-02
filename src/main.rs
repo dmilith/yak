@@ -8,6 +8,7 @@ extern crate cld2;
 extern crate encoding;
 extern crate ammonia;
 extern crate time;
+extern crate sha1;
 
 use regex::Regex;
 use time::*;
@@ -107,6 +108,13 @@ fn matcher_test() {
 }
 
 
+fn sha1_of(input: String) -> String {
+    let mut m = sha1::Sha1::new();
+    m.update(input.as_bytes());
+    m.hexdigest()
+}
+
+
 fn process_file(name: &str, f: &File) {
     if valid_file_extensions(name) {
         let bytes_to_read = 8192u64;
@@ -127,20 +135,20 @@ fn process_file(name: &str, f: &File) {
 
                         match detect_language(&buf, Format::Text) {
                             (Some(Lang(lang)), Reliable) =>
-                                println!("Reliable detection: {}, lang: {:?}, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?} s ago",
-                                    name, lang, enc.name(), metadata.size(), metadata.uid(), metadata.gid(), metadata.mode(), get_time().sec - metadata.mtime()),
+                                println!("Reliable detection: {}, sha1: {}, lang: {:?}, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?} s ago",
+                                    name, sha1_of(buf), lang, enc.name(), metadata.size(), metadata.uid(), metadata.gid(), metadata.mode(), get_time().sec - metadata.mtime()),
 
                             (Some(Lang(lang)), _) =>
-                                println!("Unreliable detection: {}, lang: {:?}, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?} s ago",
-                                    name, lang, enc.name(), metadata.size(), metadata.uid(), metadata.gid(), metadata.mode(), get_time().sec - metadata.mtime()),
+                                println!("Unreliable detection: {}, sha1: {}, lang: {:?}, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?} s ago",
+                                    name, sha1_of(buf), lang, enc.name(), metadata.size(), metadata.uid(), metadata.gid(), metadata.mode(), get_time().sec - metadata.mtime()),
 
                             (None, Reliable) =>
-                                println!("Reliable no detection: {}, lang: Unknown, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?} s ago",
-                                    name, enc.name(), metadata.size(), metadata.uid(), metadata.gid(), metadata.mode(), get_time().sec - metadata.mtime()),
+                                println!("Reliable no detection: {}, sha1: {}, lang: Unknown, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?} s ago",
+                                    name, sha1_of(buf), enc.name(), metadata.size(), metadata.uid(), metadata.gid(), metadata.mode(), get_time().sec - metadata.mtime()),
 
                             (None, _) => /* not detected properly or value isn't reliable enough to tell */
-                                println!("Unreliable no detection: {}, lang: Unknown, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?} s ago",
-                                    name, enc.name(), metadata.size(), metadata.uid(), metadata.gid(), metadata.mode(), get_time().sec - metadata.mtime()),
+                                println!("Unreliable no detection: {}, sha1: {}, lang: Unknown, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?} s ago",
+                                    name, sha1_of(buf), enc.name(), metadata.size(), metadata.uid(), metadata.gid(), metadata.mode(), get_time().sec - metadata.mtime()),
                         }
                     },
 
