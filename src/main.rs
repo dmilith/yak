@@ -4,7 +4,9 @@ extern crate walkdir;
 extern crate cld2;
 extern crate encoding;
 extern crate ammonia;
+extern crate time;
 
+use time::get_time;
 use ammonia::*;
 use cld2::{detect_language, Format, Reliable, Lang};
 use encoding::*;
@@ -105,20 +107,20 @@ fn process_file(name: &str, f: &File) {
 
                         match detect_language(&buf, Format::Text) {
                             (Some(Lang(lang)), Reliable) =>
-                                println!("Reliable detection: {}, lang: {:?}, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?}",
-                                    name, lang, enc.name(), metadata.size(), metadata.uid(), metadata.gid(), metadata.mode(), metadata.mtime()),
+                                println!("Reliable detection: {}, lang: {:?}, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?} s ago",
+                                    name, lang, enc.name(), metadata.size(), metadata.uid(), metadata.gid(), metadata.mode(), get_time().sec - metadata.mtime()),
 
                             (Some(Lang(lang)), _) =>
-                                println!("Unreliable detection: {}, lang: {:?}, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?}",
-                                    name, lang, enc.name(), metadata.size(), metadata.uid(), metadata.gid(), metadata.mode(), metadata.mtime()),
+                                println!("Unreliable detection: {}, lang: {:?}, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?} s ago",
+                                    name, lang, enc.name(), metadata.size(), metadata.uid(), metadata.gid(), metadata.mode(), get_time().sec - metadata.mtime()),
 
                             (None, Reliable) =>
-                                println!("Reliable no detection: {}, lang: Unknown, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?}",
-                                    name, enc.name(), metadata.size(), metadata.uid(), metadata.gid(), metadata.mode(), metadata.mtime()),
+                                println!("Reliable no detection: {}, lang: Unknown, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?} s ago",
+                                    name, enc.name(), metadata.size(), metadata.uid(), metadata.gid(), metadata.mode(), get_time().sec - metadata.mtime()),
 
                             (None, _) => /* not detected properly or value isn't reliable enough to tell */
-                                println!("Unreliable no detection: {}, lang: Unknown, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?}",
-                                    name, enc.name(), metadata.size(), metadata.uid(), metadata.gid(), metadata.mode(), metadata.mtime()),
+                                println!("Unreliable no detection: {}, lang: Unknown, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?} s ago",
+                                    name, enc.name(), metadata.size(), metadata.uid(), metadata.gid(), metadata.mode(), get_time().sec - metadata.mtime()),
                         }
                     },
 
