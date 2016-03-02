@@ -173,14 +173,15 @@ fn main() {
         .max_open(128)
         .into_iter();
 
+    let mut files_processed = 0;
     for entry in walker.filter_map(|e| e.ok()) { /* filter everything we don't have access to */
         if entry.file_type().is_file() {
             handle_file(entry.path());
+            files_processed = files_processed + 1;
         }
     }
-
     let end = precise_time_ns();
-    println!("Traverse took: {} ms to complete", (end - start)/1000/1000);
+    println!("Traverse for {} items, took: {} ms to complete", files_processed, (end - start) / 1000 / 1000);
 
     // let mut server = Nickel::new();
     // server.utilize(router! {
