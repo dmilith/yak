@@ -115,6 +115,19 @@ fn sha1_of(input: String) -> String {
 }
 
 
+/* html tag cleaner PoC: */
+fn strip_html_tags(binary_content: &Vec<u8>) -> String {
+    let a_buf = String::from_utf8_lossy(&binary_content);
+    lazy_static! {
+        static ref TAGS: Ammonia<'static> = Ammonia{
+            tags: HashSet::new(),
+            .. Ammonia::default()
+        };
+    }
+    TAGS.clean(&a_buf)
+}
+
+
 fn process_file(name: &str, f: &File) {
     if valid_file_extensions(name) {
         let bytes_to_read = 8192u64;
@@ -125,14 +138,7 @@ fn process_file(name: &str, f: &File) {
             Some(binary_content) => {
                 match detect_encoding(&binary_content) {
                     Some(enc) => {
-                        /* html tag cleaner PoC: */
-                        let a_buf = String::from_utf8_lossy(&binary_content);
-                        let cleaner = Ammonia{
-                            tags: HashSet::new(),
-                            .. Ammonia::default()
-                        };
-                        let buf = cleaner.clean(&a_buf);
-
+                        let buf = strip_html_tags(&binary_content);
                         match detect_language(&buf, Format::Text) {
                             (Some(Lang(lang)), Reliable) =>
                                 println!("Reliable detection: {}, sha1: {}, lang: {:?}, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?} s ago",
