@@ -1,3 +1,6 @@
+#[macro_use] extern crate lazy_static; // ensure that regular expressions are compiled exactly once
+extern crate regex;
+
 // #[macro_use] extern crate nickel;
 // use nickel::Nickel;
 extern crate walkdir;
@@ -6,6 +9,7 @@ extern crate encoding;
 extern crate ammonia;
 extern crate time;
 
+use regex::Regex;
 use time::*;
 use ammonia::*;
 use cld2::{detect_language, Format, Reliable, Lang};
@@ -80,15 +84,31 @@ fn read_fragment<R>(reader: R, bytes_to_read: u64) -> Option<Vec<u8>> where R: R
 }
 
 
+fn valid_file_extensions(name: &str) -> bool {
+    lazy_static! {
+        /*
+        Regex will be compiled when it's used for the first time
+        On subsequent uses, it will reuse the previous compilation
+        */
+        static ref RE: Regex = Regex::new(r"\.(php[0-9]*|htm[l0-9]*|txt|inc|py|pl|rb|sh)$").unwrap();
+    }
+    RE.is_match(name)
+}
+
+
+#[test]
+fn matcher_test() {
+    for valid in vec!("somestrange123.file.php", ".txt", "a.txt", "file.html", "file.htm4", ".pl") {
+        assert!(valid_file_extensions(valid));
+    }
+    for invalid in vec!("file.plo", "file.pyc", ".phpa", "somefile") {
+        assert!(!valid_file_extensions(invalid));
+    }
+}
+
 
 fn process_file(name: &str, f: &File) {
-    if  name.ends_with(".php") ||
-        name.ends_with(".txt") ||
-        name.ends_with(".py") ||
-        name.ends_with(".inc") ||
-        name.ends_with(".html") ||
-        name.ends_with(".pl") {
-
+    if valid_file_extensions(name) {
         let bytes_to_read = 8192u64;
         let metadata = f.metadata().unwrap();
         let mut reader = BufReader::new(f);
