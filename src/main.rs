@@ -87,12 +87,11 @@ fn process_file(name: &str, f: &File) {
         name.ends_with(".pl") {
 
         let bytes_to_read = 8192u64;
+        let size = f.metadata().unwrap().len();
         let mut reader = BufReader::new(f);
 
         match read_fragment(&mut reader, bytes_to_read) {
             Some(binary_content) => {
-                let size = -1; /* XXX */
-
                 match detect_encoding(&binary_content) {
                     Some(enc) => {
                         /* html tag cleaner PoC: */
