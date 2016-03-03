@@ -52,5 +52,5 @@ enum Interpreters {
 
 
 struct Changeset {
-
+    uuid: Uuid,
 }

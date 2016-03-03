@@ -9,7 +9,9 @@ extern crate encoding;
 extern crate ammonia;
 extern crate time;
 extern crate sha1;
+extern crate uuid;
 
+use uuid::Uuid;
 use regex::Regex;
 use time::*;
 use ammonia::*;
