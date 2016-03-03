@@ -27,6 +27,10 @@ use std::collections::{HashSet};
 use std::os::unix::fs::MetadataExt;
 
 
+mod structs;
+use structs::*;
+
+
 fn detect_encoding(vec: &Vec<u8>) -> Option<EncodingRef> {
     let possible_encodings = vec!(
         ASCII as EncodingRef,
