@@ -205,11 +205,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "num"
-version = "0.1.31"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-
-[[package]]
 name = "phf"
 version = "0.7.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -276,11 +271,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "serde"
-version = "0.6.15"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "num 0.1.31 (registry+https://github.com/rust-lang/crates.io-index)",
-]
 
 [[package]]
 name = "sha1"
@@ -299,7 +291,7 @@ dependencies = [
  "lazy_static 0.1.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "phf_generator 0.7.13 (registry+https://github.com/rust-lang/crates.io-index)",
  "phf_shared 0.7.13 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde 0.6.15 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
