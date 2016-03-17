@@ -1,3 +1,5 @@
+use uuid::Uuid;
+
 
 enum DomainStates {
     Ok,

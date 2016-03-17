@@ -129,7 +129,7 @@ fn strip_html_tags(binary_content: &Vec<u8>) -> String {
     let a_buf = String::from_utf8_lossy(&binary_content);
     lazy_static! {
         static ref TAGS: Ammonia<'static> = Ammonia{
-            tags: HashSet::new(),
+            tags: HashSet::new(), /* list of tags that may stay in content - strip all */
             .. Ammonia::default()
         };
     }
