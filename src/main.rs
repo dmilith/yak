@@ -10,15 +10,17 @@ extern crate ammonia;
 extern crate time;
 extern crate sha1;
 extern crate uuid;
+extern crate core;
 
 use uuid::Uuid;
 use regex::Regex;
+use core::result::Result;
 use time::*;
 use ammonia::*;
 use cld2::{detect_language, Format, Reliable, Lang};
 use encoding::*;
 use encoding::all::*;
-use walkdir::*; //{DirEntry, WalkDir, WalkDirIterator};
+use walkdir::{DirEntry, WalkDir, WalkDirIterator};
 
 use std::env;
 use std::io::prelude::*;
@@ -31,6 +33,8 @@ use std::os::unix::fs::MetadataExt;
 
 mod structs;
 use structs::*;
+
+
 
 
 fn detect_encoding(vec: &Vec<u8>) -> Option<EncodingRef> {
@@ -137,7 +141,7 @@ fn strip_html_tags(binary_content: &Vec<u8>) -> String {
 }
 
 
-fn process_file(name: &str, f: &File) {
+fn process_file(name: &str, f: &File) -> Result<FileEntry, String> {
     if valid_file_extensions(name) {
         let bytes_to_read = 16384u64;
         let metadata = f.metadata().unwrap();
@@ -149,31 +153,81 @@ fn process_file(name: &str, f: &File) {
                     Some(enc) => {
                         let buf = strip_html_tags(&binary_content);
                         match detect_language(&buf, Format::Text) {
-                            (Some(Lang(lang)), Reliable) =>
-                                println!("Reliable detection: {}, sha1: {}, lang: {:?}, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?} s ago",
-                                    name, sha1_of(buf), lang, enc.name(), metadata.size(), metadata.uid(), metadata.gid(), metadata.mode(), get_time().sec - metadata.mtime()),
+                            (Some(Lang(lang)), Reliable) => {
+                                let entry = structs::FileEntry {
+                                    name: name.to_string(),
+                                    sha1: sha1_of(buf),
+                                    lang: lang.to_string(),
+                                    encoding: enc.name().to_string(),
+                                    size: metadata.size(),
+                                    uid: metadata.uid(),
+                                    gid: metadata.gid(),
+                                    mode: metadata.mode(),
+                                    modified: get_time().sec - metadata.mtime()
+                                };
+                                println!("Reliable detection: {}", entry.to_string());
+                                Ok(entry)
+                            },
 
-                            (Some(Lang(lang)), _) =>
-                                println!("Unreliable detection: {}, sha1: {}, lang: {:?}, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?} s ago",
-                                    name, sha1_of(buf), lang, enc.name(), metadata.size(), metadata.uid(), metadata.gid(), metadata.mode(), get_time().sec - metadata.mtime()),
+                            (Some(Lang(lang)), _) => {
+                                let entry = structs::FileEntry {
+                                    name: name.to_string(),
+                                    sha1: sha1_of(buf),
+                                    lang: lang.to_string(),
+                                    encoding: enc.name().to_string(),
+                                    size: metadata.size(),
+                                    uid: metadata.uid(),
+                                    gid: metadata.gid(),
+                                    mode: metadata.mode(),
+                                    modified: get_time().sec - metadata.mtime()
+                                };
+                                println!("Unreliable detection: {}", entry.to_string());
+                                Ok(entry)
+                            },
 
-                            (None, Reliable) =>
-                                println!("Reliable no detection: {}, sha1: {}, lang: Unknown, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?} s ago",
-                                    name, sha1_of(buf), enc.name(), metadata.size(), metadata.uid(), metadata.gid(), metadata.mode(), get_time().sec - metadata.mtime()),
+                            (None, Reliable) => {
+                                let entry = structs::FileEntry {
+                                    name: name.to_string(),
+                                    sha1: sha1_of(buf),
+                                    lang: String::new(),
+                                    encoding: enc.name().to_string(),
+                                    size: metadata.size(),
+                                    uid: metadata.uid(),
+                                    gid: metadata.gid(),
+                                    mode: metadata.mode(),
+                                    modified: get_time().sec - metadata.mtime()
+                                };
+                                println!("Reliable no detection: {}", entry.to_string());
+                                Ok(entry)
+                            },
 
-                            (None, _) => /* not detected properly or value isn't reliable enough to tell */
-                                println!("Unreliable no detection: {}, sha1: {}, lang: Unknown, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?} s ago",
-                                    name, sha1_of(buf), enc.name(), metadata.size(), metadata.uid(), metadata.gid(), metadata.mode(), get_time().sec - metadata.mtime()),
+                            (None, _) => { /* not detected properly or value isn't reliable enough to tell */
+                                let entry = structs::FileEntry {
+                                    name: name.to_string(),
+                                    sha1: sha1_of(buf),
+                                    lang: String::new(),
+                                    encoding: enc.name().to_string(),
+                                    size: metadata.size(),
+                                    uid: metadata.uid(),
+                                    gid: metadata.gid(),
+                                    mode: metadata.mode(),
+                                    modified: get_time().sec - metadata.mtime()
+                                };
+                                println!("Unreliable no detection: {}", entry.to_string());
+                                Ok(entry)
+                            }
                         }
                     },
 
-                    None => println!("None"),
+                    None => Err(String::from("None")),
                 }
             },
 
             None =>
-                println!("Error reading file!"),
+                Err(String::from("Error reading file!")),
         }
+    } else {
+        Err(String::from("None"))
     }
 }
 
@@ -182,7 +236,16 @@ fn handle_file(path: &Path) {
     let name = path.to_str().unwrap();
 
     match File::open(name) {
-        Ok(f) => process_file(name, &f),
+        Ok(f) => {
+            match process_file(name, &f) {
+                Ok(val) => {
+                    println!("Ok: {}", val.to_string())
+                },
+                Err(err) => {
+                    println!("Err: {}", err)
+                },
+            }
+        },
         Err(e) => println!("Error in file IO: {:?}", e),
     }
 }
