@@ -1,6 +1,18 @@
 use uuid::Uuid;
 
 
+pub struct FileEntry {
+    pub name: String,
+    pub sha1: String,
+    pub lang: String,
+    pub encoding: String,
+    pub size: i64,
+    pub uid: u32,
+    pub gid: u32,
+    pub mode: u16,
+    pub modified: i64,
+}
+
 enum DomainStates {
     Ok,
     Warning,
