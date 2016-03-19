@@ -227,7 +227,7 @@ fn process_file(name: &str, f: &File) -> Result<FileEntry, String> {
                 Err(String::from("Error reading file!")),
         }
     } else {
-        Err(String::from("None"))
+        Err(String::from("Invalid file type"))
     }
 }
 
@@ -242,7 +242,11 @@ fn handle_file(path: &Path) {
                     println!("Ok: {}", val.to_string())
                 },
                 Err(err) => {
-                    println!("Err: {}", err)
+                    match err.as_ref() {
+                        "Invalid file type" => {}, /* report nothing */
+                        _ => println!("Err: {:?}", err), /* yell about everything else */
+                    }
+
                 },
             }
         },
