@@ -1,4 +1,6 @@
 use uuid::Uuid;
+use std::fmt;
+use std::fmt::Display;
 
 
 pub struct FileEntry {
@@ -29,9 +31,9 @@ impl Default for FileEntry {
     }
 }
 
-impl ToString for FileEntry {
-    fn to_string(&self) -> String {
-        format!("FileEntry{{name: {}, sha1: {}, lang: {:?}, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?}s ago}}",
+impl Display for FileEntry {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "FileEntry{{name: {}, sha1: {}, lang: {:?}, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?}s ago}}",
                 self.name, self.sha1, self.lang, self.encoding, self.size,
                 self.uid, self.gid, self.mode, self.modified,
         )
