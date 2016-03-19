@@ -13,6 +13,22 @@ pub struct FileEntry {
     pub modified: i64,
 }
 
+impl Default for FileEntry {
+    fn default() -> FileEntry {
+        FileEntry {
+            name: String::new(),
+            sha1: String::new(),
+            lang: String::new(),
+            encoding: String::new(),
+            size: 0,
+            uid: 0,
+            gid: 0,
+            mode: 0,
+            modified: 0,
+        }
+    }
+}
+
 enum DomainStates {
     Ok,
     Warning,
