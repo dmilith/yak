@@ -239,7 +239,7 @@ fn handle_file(path: &Path) {
         Ok(f) => {
             match process_file(name, &f) {
                 Ok(val) => {
-                    println!("Ok: {}", val.to_string())
+                    println!("Ok: {}", val)
                 },
                 Err(err) => {
                     match err.as_ref() {
