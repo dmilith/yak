@@ -29,6 +29,15 @@ impl Default for FileEntry {
     }
 }
 
+impl ToString for FileEntry {
+    fn to_string(&self) -> String {
+        format!("FileEntry{{name: {}, sha1: {}, lang: {:?}, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?}s ago}}",
+                self.name, self.sha1, self.lang, self.encoding, self.size,
+                self.uid, self.gid, self.mode, self.modified,
+        )
+    }
+}
+
 enum DomainStates {
     Ok,
     Warning,
