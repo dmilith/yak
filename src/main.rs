@@ -13,6 +13,7 @@ extern crate uuid;
 extern crate core;
 extern crate rustc_serialize;
 extern crate users;
+extern crate curl;
 
 use uuid::Uuid;
 use regex::Regex;
@@ -33,6 +34,7 @@ use std::fs::File;
 use std::path::Path;
 use std::collections::{HashSet};
 use std::os::unix::fs::MetadataExt;
+use curl::http;
 
 
 mod structs;

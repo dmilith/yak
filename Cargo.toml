@@ -15,6 +15,7 @@ sha1 = "0.1"
 lazy_static = "0.1"
 rustc-serialize = "0.3"
 users = "0.5"
+curl = "0.2"
 # nickel = "*"
 # websocket = "0.15.0"
 
