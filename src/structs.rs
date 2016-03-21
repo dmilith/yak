@@ -65,6 +65,17 @@ impl Default for FileEntry {
     }
 }
 
+
+impl Display for Owner {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match json::encode(&self) {
+            Ok(result) => write!(f, "Owner: {}", result),
+            Err(err) => write!(f, "Failure serializing JSON for Owner! Cause: {}", err)
+        }
+    }
+}
+
+
 impl Display for FileEntry {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "FileEntry{{name: {}, sha1: {}, lang: {:?}, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?}s ago}}",
