@@ -85,6 +85,17 @@ impl Display for FileEntry {
     }
 }
 
+
+impl Display for DomainEntry {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match json::encode(&self) {
+            Ok(result) => write!(f, "DomainEntry: {}", result),
+            Err(err) => write!(f, "Failure serializing JSON for DomainEntry! Cause: {}", err)
+        }
+    }
+}
+
+
 enum DomainStates {
     Ok,
     Warning,
