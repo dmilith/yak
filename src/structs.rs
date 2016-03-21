@@ -25,13 +25,12 @@ pub struct Owner {
 
 #[derive(RustcDecodable, RustcEncodable)]
 pub struct FileEntry {
-    pub name: String,
+    pub path: String,
     pub sha1: String,
     pub lang: String,
     pub encoding: String,
+    pub owner: Owner,
     pub size: i64,
-    pub uid: u32,
-    pub gid: u32,
     pub mode: u16,
     pub modified: i64,
 }
@@ -52,13 +51,18 @@ pub struct DomainEntry {
 impl Default for FileEntry {
     fn default() -> FileEntry {
         FileEntry {
-            name: String::new(),
+            path: String::new(),
             sha1: String::new(),
             lang: String::new(),
             encoding: String::new(),
             size: 0,
-            uid: 0,
-            gid: 0,
+            owner: Owner {
+                name: String::from("root"),
+                origin: String::from("S0"),
+                account_type: AccountType::Admin,
+                uid: 0,
+                gid: 0
+            },
             mode: 0,
             modified: 0,
         }
