@@ -42,10 +42,10 @@ pub struct DomainEntry {
     pub uuid: Uuid,
     pub file: FileEntry,
     pub http_content_encoding: String,
-    pub http_content_size: i64,
-    pub http_status_code: i64,
-    pub request_time: i64,
-    pub response_time: i64,
+    pub http_content_size: usize,
+    pub http_status_code: u32,
+    pub response_time: u64,
+    // pub request_time: i64,
 }
 
 impl Default for FileEntry {
