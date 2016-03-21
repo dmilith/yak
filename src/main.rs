@@ -143,7 +143,9 @@ fn strip_html_tags(binary_content: &Vec<u8>) -> String {
             .. Ammonia::default()
         };
     }
-    String::from(TAGS.clean(&a_buf).trim())
+    let cleaned = String::from(TAGS.clean(&a_buf));
+    let matches: &[_] = &['\n', '\t', '\r'];
+    cleaned.replace(matches, "").to_string()
 }
 
 fn strip_html_tags_slice(binary_content: &[u8]) -> String {
@@ -154,7 +156,17 @@ fn strip_html_tags_slice(binary_content: &[u8]) -> String {
             .. Ammonia::default()
         };
     }
-    String::from(TAGS2.clean(&a_buf).trim())
+    let cleaned = String::from(TAGS2.clean(&a_buf));
+    let matches: &[_] = &['\n', '\t', '\r'];
+    cleaned.replace(matches, "").to_string()
+}
+
+
+#[test]
+fn strip_html_tags_slice_test() {
+    let a = "some skdnfdsfk<html><meta></meta><body></body></html> js\n\n\n\n\n\n\nn\\t\t\t\t\t\t\t\t\t\t\t aaaa bbbb cccc";
+    let b = a.as_bytes();
+    assert!(strip_html_tags_slice(b) == String::from("some skdnfdsfk jsn\\t aaaa bbbb cccc"), format!("Found {}", strip_html_tags_slice(b)))
 }
 
 
