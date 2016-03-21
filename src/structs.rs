@@ -80,6 +80,28 @@ impl Default for FileEntry {
 }
 
 
+impl Default for DomainEntry {
+    fn default() -> DomainEntry {
+        DomainEntry {
+            name: String::from("verknowsys.com"),
+            request_path: String::from("/"),
+            uuid: Uuid::new_v4(),
+            file: FileEntry { .. Default::default() },
+            http_content: String::new(),
+            http_content_encoding: String::new(),
+            http_content_size: 0,
+            http_status_code: 0,
+            http_response_time: 0,
+            https_content: String::new(),
+            https_content_encoding: String::new(),
+            https_content_size: 0,
+            https_status_code: 0,
+            https_response_time: 0,
+        }
+    }
+}
+
+
 impl Display for Owner {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match json::encode(&self) {
