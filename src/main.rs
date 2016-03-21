@@ -294,7 +294,7 @@ fn handle_file(path: &Path) -> Option<DomainEntry> {
                                     }
                                 },
                                 Err(err) => {
-                                    println!("Err: {:?}", err);
+                                    println!("Error: {:?} with: {}", err, format!("{}://{}/{}", protocol, domain, request_path));
                                 }
                             }
                         }
