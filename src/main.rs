@@ -276,35 +276,54 @@ fn handle_file(path: &Path) -> Option<DomainEntry> {
                     for _domain in domain_from_path.captures_iter(file_entry.path.as_ref()) {
                         let domain = _domain.at(1).unwrap_or("");
                         let by = format!("{}/public_html/", domain);
-                        let request_path = file_entry.path.split(by.as_str()).last().unwrap_or("");
-                        println!("Processing http(s) path: {}/{}", domain, request_path);
 
-                        let start = precise_time_ns();
-                        let resp = http::handle()
-                            // .verbose()
-                            .follow_location(1)
-                            .connect_timeout(3000)
-                            .ssl_verifypeer(false)
-                            .get(format!("http://{}/{}", domain, request_path))
-                            .exec().unwrap();
-                        let end = precise_time_ns();
-                        let contents = strip_html_tags_slice(resp.get_body());
-                        println!("Content-Type: {:?}", resp.get_header("Content-Type"));
-
-                        /* file entry filled, now proceed with DomainEntry.. */
-                        return Some(
-                            DomainEntry {
-                                file: file_entry.clone(),
-                                request_path: String::from(request_path),
-                                name: String::from(domain),
-                                uuid: Uuid::new_v4(),
-                                http_content_encoding: String::new(), /* XXX */
-                                http_content: contents.clone(),
-                                http_content_size: contents.len(),
-                                http_status_code: resp.get_code(),
-                                response_time: (end - start) / 1000 / 1000,
+                        let request_path = file_entry.path.split(by.as_str()).last().unwrap_or("/");
+                        let mut result = DomainEntry {
+                            file: file_entry.clone(),
+                            request_path: format!("/{}", request_path),
+                            name: String::from(domain),
+                            uuid: Uuid::new_v4(),
+                            .. Default::default()
+                        };
+                        let request_protocols = vec!("http", "https");
+                        for protocol in request_protocols {
+                            let start = precise_time_ns();
+                            match http::handle()
+                                .follow_location(1)
+                                .connect_timeout(3000)
+                                .ssl_verifypeer(false)
+                                .get(format!("{}://{}/{}", protocol, domain, request_path))
+                                .exec() {
+                                Ok(resp) => {
+                                    let end = precise_time_ns();
+                                    println!("Processed request: {}://{}/{} in {}ms", protocol, domain, request_path, (end - start) / 1000 / 1000);
+                                    let contents = strip_html_tags_slice(resp.get_body());
+                                    match protocol {
+                                        "http" => {
+                                            result.http_content_encoding = String::new(); /* XXX */
+                                            result.http_content = contents.clone();
+                                            result.http_content_size = contents.len();
+                                            result.http_status_code = resp.get_code();
+                                            result.http_response_time = (end - start) / 1000 / 1000;
+                                        },
+                                        "https" => {
+                                            result.https_content_encoding = String::new(); /* XXX */
+                                            result.https_content = contents.clone();
+                                            result.https_content_size = contents.len();
+                                            result.https_status_code = resp.get_code();
+                                            result.https_response_time = (end - start) / 1000 / 1000;
+                                        },
+                                        _ => {
+                                        }
+                                    }
+                                },
+                                Err(err) => {
+                                    println!("Err: {:?}", err);
+                                }
                             }
-                        )
+                        }
+                        // println!("Content-Type: {:?}", resp.get_header("Content-Type"));
+                        return Some(result)
                     };
                     None
                 },
