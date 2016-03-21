@@ -252,7 +252,7 @@ fn process_file(abs_path: &str, f: &File) -> Result<FileEntry, String> {
 }
 
 
-fn handle_file(path: &Path) {
+fn handle_file(path: &Path) -> Option<DomainEntry> {
     let name = path.to_str().unwrap();
 
     match File::open(name) {
@@ -264,38 +264,53 @@ fn handle_file(path: &Path) {
                     for _domain in domain_from_path.captures_iter(file_entry.path.as_ref()) {
                         let domain = _domain.at(1).unwrap_or("");
                         let by = format!("{}/public_html/", domain);
-                        let file_from_path = file_entry.path.split(by.as_str()).last().unwrap_or("");
-                        println!("Processing http(s) path: {}/{}", domain, file_from_path);
+                        let request_path = file_entry.path.split(by.as_str()).last().unwrap_or("");
+                        println!("Processing http(s) path: {}/{}", domain, request_path);
 
                         let start = precise_time_ns();
                         let resp = http::handle()
-                            .get(format!("http://{}/{}", domain, file_entry.path))
+                            // .verbose()
+                            .follow_location(1)
+                            .connect_timeout(3000)
+                            .ssl_verifypeer(false)
+                            .get(format!("http://{}/{}", domain, request_path))
                             .exec().unwrap();
                         let end = precise_time_ns();
+                        let contents = strip_html_tags_slice(resp.get_body());
+                        println!("Content-Type: {:?}", resp.get_header("Content-Type"));
 
-                        /* file entry filled, now proceed with DomainEntry checks.. */
-                        let domain_entry = DomainEntry {
-                            file: file_entry.clone(),
-                            name: String::from(domain),
-                            uuid: Uuid::new_v4(),
-                            http_content_encoding: String::new(),
-                            http_content_size: format!("{:?}", resp.get_body()).len(),
-                            http_status_code: resp.get_code(),
-                            response_time: (end - start) / 1000 / 1000,
-                        };
-                        println!("Ok: {} -> {}", file_entry, domain_entry)
+                        /* file entry filled, now proceed with DomainEntry.. */
+                        return Some(
+                            DomainEntry {
+                                file: file_entry.clone(),
+                                request_path: String::from(request_path),
+                                name: String::from(domain),
+                                uuid: Uuid::new_v4(),
+                                http_content_encoding: String::new(), /* XXX */
+                                http_content: contents.clone(),
+                                http_content_size: contents.len(),
+                                http_status_code: resp.get_code(),
+                                response_time: (end - start) / 1000 / 1000,
+                            }
+                        )
                     };
+                    None
                 },
                 Err(err) => {
                     match err.as_ref() {
-                        "Invalid file type" => {}, /* report nothing */
-                        _ => println!("Err: {:?}", err), /* yell about everything else */
+                        "Invalid file type" => None, /* report nothing */
+                        _ => { /* yell about everything else */
+                            println!("Err: {:?}", err);
+                            None
+                        },
                     }
-
                 },
             }
         },
-        Err(e) => println!("Error in file IO: {:?}", e),
+        Err(e) => {
+            println!("Error in file IO: {:?}", e);
+            None
+        },
     }
 }
 
@@ -331,7 +346,7 @@ fn main() {
     let mut files_processed = 0;
     for entry in walker.filter_map(|e| e.ok()) { /* filter everything we don't have access to */
         if entry.file_type().is_file() {
-            handle_file(entry.path());
+            println!("DBG: {}", handle_file(entry.path()).unwrap());
             files_processed = files_processed + 1;
         }
     }
