@@ -247,8 +247,33 @@ fn handle_file(path: &Path) {
     match File::open(name) {
         Ok(f) => {
             match process_file(name, &f) {
-                Ok(val) => {
-                    println!("Ok: {}", val)
+                Ok(file_entry) => {
+                    /* default domain location: /home/{owner.name}/domains/{domain.name}/public_html/ */
+                    let domain_from_path = Regex::new(r".*/domains/(.*)/public_html/.*").unwrap();
+                    for _domain in domain_from_path.captures_iter(file_entry.path.as_ref()) {
+                        let domain = _domain.at(1).unwrap_or("");
+                        let by = format!("{}/public_html/", domain);
+                        let file_from_path = file_entry.path.split(by.as_str()).last().unwrap_or("");
+                        println!("Processing http(s) path: {}/{}", domain, file_from_path);
+
+                        let start = precise_time_ns();
+                        let resp = http::handle()
+                            .get(format!("http://{}/{}", domain, file_entry.path))
+                            .exec().unwrap();
+                        let end = precise_time_ns();
+
+                        /* file entry filled, now proceed with DomainEntry checks.. */
+                        let domain_entry = DomainEntry {
+                            file: file_entry.clone(),
+                            name: String::from(domain),
+                            uuid: Uuid::new_v4(),
+                            http_content_encoding: String::new(),
+                            http_content_size: format!("{:?}", resp.get_body()).len(),
+                            http_status_code: resp.get_code(),
+                            response_time: (end - start) / 1000 / 1000,
+                        };
+                        println!("Ok: {} -> {}", file_entry, domain_entry)
+                    };
                 },
                 Err(err) => {
                     match err.as_ref() {
