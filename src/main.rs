@@ -12,6 +12,7 @@ extern crate sha1;
 extern crate uuid;
 extern crate core;
 extern crate rustc_serialize;
+extern crate users;
 
 use uuid::Uuid;
 use regex::Regex;
@@ -22,6 +23,7 @@ use cld2::{detect_language, Format, Reliable, Lang};
 use encoding::*;
 use encoding::all::*;
 use walkdir::{DirEntry, WalkDir, WalkDirIterator};
+use users::{get_user_by_uid, get_current_uid};
 use rustc_serialize::{Decodable, Encodable, json};
 
 use std::env;
@@ -143,8 +145,8 @@ fn strip_html_tags(binary_content: &Vec<u8>) -> String {
 }
 
 
-fn process_file(name: &str, f: &File) -> Result<FileEntry, String> {
-    if valid_file_extensions(name) {
+fn process_file(abs_path: &str, f: &File) -> Result<FileEntry, String> {
+    if valid_file_extensions(abs_path) {
         let bytes_to_read = 16384u64;
         let metadata = f.metadata().unwrap();
         let mut reader = BufReader::new(f);
@@ -153,17 +155,23 @@ fn process_file(name: &str, f: &File) -> Result<FileEntry, String> {
             Some(binary_content) => {
                 match detect_encoding(&binary_content) {
                     Some(enc) => {
+                        let an_owner = Owner {
+                            origin: String::new(), /* XXX */
+                            name: String::from(get_user_by_uid(metadata.uid()).unwrap().name()),
+                            account_type: structs::AccountType::Regular,
+                            uid: metadata.uid(),
+                            gid: metadata.gid()
+                        };
                         let buf = strip_html_tags(&binary_content);
                         match detect_language(&buf, Format::Text) {
                             (Some(Lang(lang)), Reliable) => {
                                 let entry = structs::FileEntry {
-                                    name: name.to_string(),
+                                    owner: an_owner,
+                                    path: abs_path.to_string(),
                                     sha1: sha1_of(buf),
                                     lang: lang.to_string(),
                                     encoding: enc.name().to_string(),
                                     size: metadata.size(),
-                                    uid: metadata.uid(),
-                                    gid: metadata.gid(),
                                     mode: metadata.mode(),
                                     modified: get_time().sec - metadata.mtime()
                                 };
@@ -173,13 +181,12 @@ fn process_file(name: &str, f: &File) -> Result<FileEntry, String> {
 
                             (Some(Lang(lang)), _) => {
                                 let entry = structs::FileEntry {
-                                    name: name.to_string(),
+                                    owner: an_owner,
+                                    path: abs_path.to_string(),
                                     sha1: sha1_of(buf),
                                     lang: lang.to_string(),
                                     encoding: enc.name().to_string(),
                                     size: metadata.size(),
-                                    uid: metadata.uid(),
-                                    gid: metadata.gid(),
                                     mode: metadata.mode(),
                                     modified: get_time().sec - metadata.mtime()
                                 };
@@ -189,13 +196,12 @@ fn process_file(name: &str, f: &File) -> Result<FileEntry, String> {
 
                             (None, Reliable) => {
                                 let entry = structs::FileEntry {
-                                    name: name.to_string(),
+                                    owner: an_owner,
+                                    path: abs_path.to_string(),
                                     sha1: sha1_of(buf),
                                     lang: String::new(),
                                     encoding: enc.name().to_string(),
                                     size: metadata.size(),
-                                    uid: metadata.uid(),
-                                    gid: metadata.gid(),
                                     mode: metadata.mode(),
                                     modified: get_time().sec - metadata.mtime()
                                 };
@@ -205,13 +211,12 @@ fn process_file(name: &str, f: &File) -> Result<FileEntry, String> {
 
                             (None, _) => { /* not detected properly or value isn't reliable enough to tell */
                                 let entry = structs::FileEntry {
-                                    name: name.to_string(),
+                                    owner: an_owner,
+                                    path: abs_path.to_string(),
                                     sha1: sha1_of(buf),
                                     lang: String::new(),
                                     encoding: enc.name().to_string(),
                                     size: metadata.size(),
-                                    uid: metadata.uid(),
-                                    gid: metadata.gid(),
                                     mode: metadata.mode(),
                                     modified: get_time().sec - metadata.mtime()
                                 };
