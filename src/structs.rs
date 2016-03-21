@@ -12,6 +12,17 @@ pub enum AccountType {
     Admin,
 }
 
+
+#[derive(RustcDecodable, RustcEncodable)]
+pub struct Owner {
+    pub name: String, /* user name */
+    pub account_type: AccountType,
+    pub origin: String, /* host origin name */
+    pub uid: u32,
+    pub gid: u32,
+}
+
+
 #[derive(RustcDecodable, RustcEncodable)]
 pub struct FileEntry {
     pub name: String,
