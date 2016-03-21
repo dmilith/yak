@@ -4,7 +4,7 @@ use std::fmt::Display;
 use rustc_serialize::{Decodable, Encodable, json};
 
 
-#[derive(RustcDecodable, RustcEncodable, Debug)]
+#[derive(RustcDecodable, RustcEncodable, Debug, Clone)]
 pub enum AccountType {
     Regular,
     Reseller,
@@ -13,7 +13,7 @@ pub enum AccountType {
 }
 
 
-#[derive(RustcDecodable, RustcEncodable)]
+#[derive(RustcDecodable, RustcEncodable, Clone)]
 pub struct Owner {
     pub name: String, /* user name */
     pub account_type: AccountType,
@@ -23,7 +23,7 @@ pub struct Owner {
 }
 
 
-#[derive(RustcDecodable, RustcEncodable)]
+#[derive(RustcDecodable, RustcEncodable, Clone)]
 pub struct FileEntry {
     pub path: String,
     pub sha1: String,
