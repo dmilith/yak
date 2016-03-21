@@ -17,6 +17,19 @@ pub struct FileEntry {
     pub modified: i64,
 }
 
+
+#[derive(RustcDecodable, RustcEncodable)]
+pub struct DomainEntry {
+    pub name: String,
+    pub uuid: Uuid,
+    pub file: FileEntry,
+    pub http_content_encoding: String,
+    pub http_content_size: i64,
+    pub http_status_code: i64,
+    pub request_time: i64,
+    pub response_time: i64,
+}
+
 impl Default for FileEntry {
     fn default() -> FileEntry {
         FileEntry {
