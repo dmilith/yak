@@ -188,63 +188,39 @@ fn process_file(abs_path: &str, f: &File) -> Result<FileEntry, String> {
                             gid: metadata.gid()
                         };
                         let buf = strip_html_tags(&binary_content);
+                        let mut entry = structs::FileEntry {
+                            owner: an_owner,
+                            path: abs_path.to_string(),
+                            size: metadata.size(),
+                            mode: metadata.mode(),
+                            modified: get_time().sec - metadata.mtime(),
+                            .. Default::default()
+                        };
                         match detect_language(&buf, Format::Text) {
                             (Some(Lang(lang)), Reliable) => {
-                                let entry = structs::FileEntry {
-                                    owner: an_owner,
-                                    path: abs_path.to_string(),
-                                    sha1: sha1_of(buf),
-                                    lang: lang.to_string(),
-                                    encoding: enc.name().to_string(),
-                                    size: metadata.size(),
-                                    mode: metadata.mode(),
-                                    modified: get_time().sec - metadata.mtime()
-                                };
+                                entry.sha1 = sha1_of(buf);
+                                entry.lang = String::from(lang);
                                 println!("Reliable detection: {}", json::encode(&entry).unwrap());
                                 Ok(entry)
                             },
 
                             (Some(Lang(lang)), _) => {
-                                let entry = structs::FileEntry {
-                                    owner: an_owner,
-                                    path: abs_path.to_string(),
-                                    sha1: sha1_of(buf),
-                                    lang: lang.to_string(),
-                                    encoding: enc.name().to_string(),
-                                    size: metadata.size(),
-                                    mode: metadata.mode(),
-                                    modified: get_time().sec - metadata.mtime()
-                                };
+                                entry.sha1 = sha1_of(buf);
+                                entry.lang = String::from(lang);
                                 println!("Unreliable detection: {}", entry.to_string());
                                 Ok(entry)
                             },
 
                             (None, Reliable) => {
-                                let entry = structs::FileEntry {
-                                    owner: an_owner,
-                                    path: abs_path.to_string(),
-                                    sha1: sha1_of(buf),
-                                    lang: String::new(),
-                                    encoding: enc.name().to_string(),
-                                    size: metadata.size(),
-                                    mode: metadata.mode(),
-                                    modified: get_time().sec - metadata.mtime()
-                                };
+                                entry.sha1 = sha1_of(buf);
+                                entry.lang = String::new();
                                 println!("Reliable no detection: {}", entry.to_string());
                                 Ok(entry)
                             },
 
                             (None, _) => { /* not detected properly or value isn't reliable enough to tell */
-                                let entry = structs::FileEntry {
-                                    owner: an_owner,
-                                    path: abs_path.to_string(),
-                                    sha1: sha1_of(buf),
-                                    lang: String::new(),
-                                    encoding: enc.name().to_string(),
-                                    size: metadata.size(),
-                                    mode: metadata.mode(),
-                                    modified: get_time().sec - metadata.mtime()
-                                };
+                                entry.sha1 = sha1_of(buf);
+                                entry.lang = String::new();
                                 println!("Unreliable no detection: {}", entry.to_string());
                                 Ok(entry)
                             }
