@@ -31,7 +31,7 @@ pub struct FileEntry {
     pub encoding: String,
     pub owner: Owner,
     pub size: i64,
-    pub mode: u16,
+    pub mode: u32,
     pub modified: i64,
 }
 
