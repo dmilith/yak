@@ -143,7 +143,18 @@ fn strip_html_tags(binary_content: &Vec<u8>) -> String {
             .. Ammonia::default()
         };
     }
-    TAGS.clean(&a_buf)
+    String::from(TAGS.clean(&a_buf).trim())
+}
+
+fn strip_html_tags_slice(binary_content: &[u8]) -> String {
+    let a_buf = String::from_utf8_lossy(binary_content);
+    lazy_static! {
+        static ref TAGS2: Ammonia<'static> = Ammonia {
+            tags: HashSet::new(), /* list of tags that may stay in content - strip all */
+            .. Ammonia::default()
+        };
+    }
+    String::from(TAGS2.clean(&a_buf).trim())
 }
 
 
