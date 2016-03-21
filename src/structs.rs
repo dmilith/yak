@@ -1,8 +1,10 @@
 use uuid::Uuid;
 use std::fmt;
 use std::fmt::Display;
+use rustc_serialize::{Decodable, Encodable, json};
 
 
+#[derive(RustcDecodable, RustcEncodable)]
 pub struct FileEntry {
     pub name: String,
     pub sha1: String,

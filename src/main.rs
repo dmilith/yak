@@ -11,6 +11,7 @@ extern crate time;
 extern crate sha1;
 extern crate uuid;
 extern crate core;
+extern crate rustc_serialize;
 
 use uuid::Uuid;
 use regex::Regex;
@@ -21,6 +22,7 @@ use cld2::{detect_language, Format, Reliable, Lang};
 use encoding::*;
 use encoding::all::*;
 use walkdir::{DirEntry, WalkDir, WalkDirIterator};
+use rustc_serialize::{Decodable, Encodable, json};
 
 use std::env;
 use std::io::prelude::*;
@@ -165,7 +167,7 @@ fn process_file(name: &str, f: &File) -> Result<FileEntry, String> {
                                     mode: metadata.mode(),
                                     modified: get_time().sec - metadata.mtime()
                                 };
-                                println!("Reliable detection: {}", entry.to_string());
+                                println!("Reliable detection: {}", json::encode(&entry).unwrap());
                                 Ok(entry)
                             },
 
