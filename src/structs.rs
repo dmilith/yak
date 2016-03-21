@@ -42,11 +42,19 @@ pub struct DomainEntry {
     pub request_path: String,
     pub uuid: Uuid,
     pub file: FileEntry,
+
     pub http_content: String,
     pub http_content_encoding: String,
     pub http_content_size: usize,
     pub http_status_code: u32,
-    pub response_time: u64,
+    pub http_response_time: u64,
+
+    pub https_content: String,
+    pub https_content_encoding: String,
+    pub https_content_size: usize,
+    pub https_status_code: u32,
+    pub https_response_time: u64,
+
     // pub request_time: i64,
 }
 
