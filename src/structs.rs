@@ -78,10 +78,10 @@ impl Display for Owner {
 
 impl Display for FileEntry {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "FileEntry{{name: {}, sha1: {}, lang: {:?}, encoding: {}, size: {}, uid: {}, gid: {}, mode: {:o}, modified: {:?}s ago}}",
-                self.name, self.sha1, self.lang, self.encoding, self.size,
-                self.uid, self.gid, self.mode, self.modified,
-        )
+        match json::encode(&self) {
+            Ok(result) => write!(f, "FileEntry: {}", result),
+            Err(err) => write!(f, "Failure serializing JSON for FileEntry! Cause: {}", err)
+        }
     }
 }
 
