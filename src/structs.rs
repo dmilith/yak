@@ -39,8 +39,10 @@ pub struct FileEntry {
 #[derive(RustcDecodable, RustcEncodable)]
 pub struct DomainEntry {
     pub name: String,
+    pub request_path: String,
     pub uuid: Uuid,
     pub file: FileEntry,
+    pub http_content: String,
     pub http_content_encoding: String,
     pub http_content_size: usize,
     pub http_status_code: u32,
