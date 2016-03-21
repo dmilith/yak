@@ -4,6 +4,14 @@ use std::fmt::Display;
 use rustc_serialize::{Decodable, Encodable, json};
 
 
+#[derive(RustcDecodable, RustcEncodable, Debug)]
+pub enum AccountType {
+    Regular,
+    Reseller,
+    Managed,
+    Admin,
+}
+
 #[derive(RustcDecodable, RustcEncodable)]
 pub struct FileEntry {
     pub name: String,
