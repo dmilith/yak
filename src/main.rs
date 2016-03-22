@@ -194,6 +194,7 @@ fn process_file(abs_path: &str, f: &File) -> Result<FileEntry, String> {
                             size: metadata.size(),
                             mode: metadata.mode() as u32,
                             modified: get_time().sec - metadata.mtime(),
+                            encoding: enc.name().to_string(),
                             .. Default::default()
                         };
                         match detect_language(&buf, Format::Text) {
