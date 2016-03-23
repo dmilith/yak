@@ -4,9 +4,11 @@ version = "0.1.0"
 dependencies = [
  "ammonia 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "cld2 0.1.0 (git+git://github.com/emk/rust-cld2)",
- "curl 0.2.17 (registry+https://github.com/rust-lang/crates.io-index)",
+ "curl 0.2.18 (registry+https://github.com/rust-lang/crates.io-index)",
  "encoding 0.2.32 (registry+https://github.com/rust-lang/crates.io-index)",
+ "env_logger 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 0.1.15 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.3.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 0.1.58 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc-serialize 0.3.18 (registry+https://github.com/rust-lang/crates.io-index)",
  "sha1 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -56,7 +58,7 @@ name = "cld2-sys"
 version = "0.1.0"
 source = "git+git://github.com/emk/rust-cld2#bb3c7f6dfb2f5cce8200b99610daff7ee6a5fc85"
 dependencies = [
- "gcc 0.3.25 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gcc 0.3.26 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 0.1.58 (registry+https://github.com/rust-lang/crates.io-index)",
  "toml 0.1.28 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -64,10 +66,10 @@ dependencies = [
 
 [[package]]
 name = "curl"
-version = "0.2.17"
+version = "0.2.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "curl-sys 0.1.32 (registry+https://github.com/rust-lang/crates.io-index)",
+ "curl-sys 0.1.33 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.3.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "openssl-sys 0.7.8 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -76,12 +78,12 @@ dependencies = [
 
 [[package]]
 name = "curl-sys"
-version = "0.1.32"
+version = "0.1.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "gcc 0.3.25 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gcc 0.3.26 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "libz-sys 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "libz-sys 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "openssl-sys 0.7.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "pkg-config 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -152,6 +154,15 @@ version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
+name = "env_logger"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "log 0.3.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "regex 0.1.58 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "futf"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -162,7 +173,7 @@ dependencies = [
 
 [[package]]
 name = "gcc"
-version = "0.3.25"
+version = "0.3.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -223,10 +234,10 @@ dependencies = [
 
 [[package]]
 name = "libz-sys"
-version = "1.0.1"
+version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "gcc 0.3.25 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gcc 0.3.26 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "pkg-config 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
