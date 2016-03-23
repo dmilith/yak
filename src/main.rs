@@ -242,8 +242,10 @@ fn process_file(abs_path: &str, f: &File) -> Result<FileEntry, String> {
 
 
 fn handle_file(path: &Path) -> Option<DomainEntry> {
-    let name = path.to_str().unwrap();
-
+    let name = match path.to_str() {
+        Some(a_path) => a_path,
+        None => "",
+    };
     match File::open(name) {
         Ok(f) => {
             match process_file(name, &f) {
@@ -295,7 +297,7 @@ fn handle_file(path: &Path) -> Option<DomainEntry> {
                                     }
                                 },
                                 Err(err) => {
-                                    println!("Error: {:?} with: {}", err, format!("{}://{}/{}", protocol, domain, request_path));
+                                    println!("Error: {:?} caused by: {}", err, format!("{}://{}/{}", protocol, domain, request_path));
                                 }
                             }
                         }
@@ -352,14 +354,22 @@ fn main() {
         .into_iter();
 
     let mut files_processed = 0;
+    let mut files_skipped = 0;
     for entry in walker.filter_map(|e| e.ok()) { /* filter everything we don't have access to */
         if entry.file_type().is_file() {
-            println!("DBG: {}", handle_file(entry.path()).unwrap());
-            files_processed = files_processed + 1;
+            match handle_file(entry.path()) {
+                Some(entry_ok) => {
+                    files_processed += 1;
+                    println!("DBG: {}", entry_ok)
+                },
+                None => {
+                    files_skipped += 1;
+                },
+            }
         }
     }
     let end = precise_time_ns();
-    println!("Traverse for {} items, took: {} ms to complete", files_processed, (end - start) / 1000 / 1000);
+    println!("Traverse for: {} files, (skipped: {} files), elapsed: {} miliseconds", files_processed, files_skipped, (end - start) / 1000 / 1000);
 
     // let mut server = Nickel::new();
     // server.utilize(router! {
