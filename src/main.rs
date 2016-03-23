@@ -329,7 +329,7 @@ fn read_path_from_env() -> String {
     let key = "HOME";
     let home = match env::var(key) {
         Ok(val) => val,
-        Err(_) => String::from("/tmp/"),
+        Err(_) => String::from("/home/"),
     };
     let key = "TRAV";
     match env::var(key) {
