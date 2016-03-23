@@ -1,6 +1,10 @@
 #[macro_use] extern crate lazy_static; // ensure that regular expressions are compiled exactly once
 extern crate regex;
 
+#[macro_use]
+extern crate log;
+extern crate env_logger;
+
 // #[macro_use] extern crate nickel;
 // use nickel::Nickel;
 extern crate walkdir;
@@ -14,6 +18,7 @@ extern crate core;
 extern crate rustc_serialize;
 extern crate users;
 extern crate curl;
+
 
 use uuid::Uuid;
 use regex::Regex;
@@ -201,28 +206,28 @@ fn process_file(abs_path: &str, f: &File) -> Result<FileEntry, String> {
                             (Some(Lang(lang)), Reliable) => {
                                 entry.sha1 = sha1_of(buf);
                                 entry.lang = String::from(lang);
-                                println!("Reliable detection: {}", json::encode(&entry).unwrap());
+                                debug!("Reliable detection: {}", json::encode(&entry).unwrap());
                                 Ok(entry)
                             },
 
                             (Some(Lang(lang)), _) => {
                                 entry.sha1 = sha1_of(buf);
                                 entry.lang = String::from(lang);
-                                println!("Unreliable detection: {}", entry.to_string());
+                                debug!("Unreliable detection: {}", entry.to_string());
                                 Ok(entry)
                             },
 
                             (None, Reliable) => {
                                 entry.sha1 = sha1_of(buf);
                                 entry.lang = String::new();
-                                println!("Reliable no detection: {}", entry.to_string());
+                                debug!("Reliable no detection: {}", entry.to_string());
                                 Ok(entry)
                             },
 
                             (None, _) => { /* not detected properly or value isn't reliable enough to tell */
                                 entry.sha1 = sha1_of(buf);
                                 entry.lang = String::new();
-                                println!("Unreliable no detection: {}", entry.to_string());
+                                debug!("Unreliable no detection: {}", entry.to_string());
                                 Ok(entry)
                             }
                         }
@@ -340,11 +345,13 @@ fn read_path_from_env() -> String {
 
 
 fn main() {
+    env_logger::init().unwrap();
+
     let text = "Młody Amadeusz szedł suchą szosą.";
-    println!("{:?}", detect_language(text, Format::Text));
+    debug!("{:?}", detect_language(text, Format::Text));
 
     let path = read_path_from_env();
-    println!("Traversing path: {:?}", path);
+    debug!("Traversing path: {:?}", path);
 
     let start = precise_time_ns();
     let walker = WalkDir::new(path)
@@ -360,7 +367,7 @@ fn main() {
             match handle_file(entry.path()) {
                 Some(entry_ok) => {
                     files_processed += 1;
-                    println!("DBG: {}", entry_ok)
+                    debug!("DBG: {}", entry_ok)
                 },
                 None => {
                     files_skipped += 1;
@@ -369,7 +376,7 @@ fn main() {
         }
     }
     let end = precise_time_ns();
-    println!("Traverse for: {} files, (skipped: {} files), elapsed: {} miliseconds", files_processed, files_skipped, (end - start) / 1000 / 1000);
+    info!("Traverse for: {} files, (skipped: {} files), elapsed: {} miliseconds", files_processed, files_skipped, (end - start) / 1000 / 1000);
 
     // let mut server = Nickel::new();
     // server.utilize(router! {
