@@ -1,0 +1,7 @@
+#!/bin/sh
+
+if [ -z "$1" ]; then
+    RUST_LOG=yak=info cargo run
+else
+    RUST_LOG=yak=$1 cargo run
+fi
