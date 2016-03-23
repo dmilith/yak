@@ -280,7 +280,7 @@ fn handle_file(path: &Path) -> Option<DomainEntry> {
                                 .exec() {
                                 Ok(resp) => {
                                     let end = precise_time_ns();
-                                    println!("Processed request: {}://{}/{} in {}ms", protocol, domain, request_path, (end - start) / 1000 / 1000);
+                                    info!("Processed request: {}://{}/{} in {}ms", protocol, domain, request_path, (end - start) / 1000 / 1000);
                                     let contents = strip_html_tags_slice(resp.get_body());
                                     match protocol {
                                         "http" => {
@@ -302,11 +302,10 @@ fn handle_file(path: &Path) -> Option<DomainEntry> {
                                     }
                                 },
                                 Err(err) => {
-                                    println!("Error: {:?} caused by: {}", err, format!("{}://{}/{}", protocol, domain, request_path));
+                                    error!("Error: {:?}, caused on: {}", err, format!("{}://{}/{}", protocol, domain, request_path));
                                 }
                             }
                         }
-                        // println!("Content-Type: {:?}", resp.get_header("Content-Type"));
                         return Some(result)
                     };
                     None
@@ -315,7 +314,7 @@ fn handle_file(path: &Path) -> Option<DomainEntry> {
                     match err.as_ref() {
                         "Invalid file type" => None, /* report nothing */
                         _ => { /* yell about everything else */
-                            println!("Err: {:?}", err);
+                            error!("Err: {:?}", err);
                             None
                         },
                     }
@@ -323,7 +322,7 @@ fn handle_file(path: &Path) -> Option<DomainEntry> {
             }
         },
         Err(e) => {
-            println!("Error in file IO: {:?}", e);
+            error!("Error in file IO: {:?}", e);
             None
         },
     }
