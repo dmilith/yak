@@ -36,7 +36,7 @@ use users::get_user_by_uid;
 use rustc_serialize::json; // Encodable, Decodable
 use std::env;
 use std::io::prelude::*;
-use std::io::BufReader;
+use std::io::{BufReader, BufWriter};
 use std::fs::File;
 use std::path::Path;
 use std::collections::{HashSet};
@@ -391,12 +391,16 @@ fn main() {
     let mut files_skipped = 0;
     for entry in walker /* filter everything we don't have access to */
                     .filter_map(|e| e.ok())
-                    .filter(|e| e.metadata().unwrap().is_file())
-                    .filter(|e| e.path().to_str().unwrap_or("").contains("domains")) {
+                    .filter(|e| e.metadata().unwrap().is_file() && e.path().to_str().unwrap_or("").contains("domains")) {
         match handle_file(entry.path()) {
             Some(entry_ok) => {
+                let output_file = format!("/root/domain_${}_owner_{}.json", entry_ok.name, entry_ok.file.owner.name);
+                let f = File::create(output_file.clone()).unwrap();
+                let mut writer = BufWriter::new(f);
+                writer.write(entry_ok.to_string().as_bytes()).unwrap();
+
+                info!("DomainEntry: {} stored to file: {}", entry_ok, output_file);
                 files_processed += 1;
-                info!("DomainEntry found: {}", entry_ok)
             },
             None => {
                 files_skipped += 1;
