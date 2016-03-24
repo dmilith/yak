@@ -281,7 +281,7 @@ fn handle_file(path: &Path) -> Option<DomainEntry> {
                                 .exec() {
                                 Ok(resp) => {
                                     let end = precise_time_ns();
-                                    info!("Processed request: {}://{}/{} in {}ms", protocol, domain, request_path, (end - start) / 1000 / 1000);
+                                    debug!("Processed external request: {}://{}/{} in {}ms", protocol, domain, request_path, (end - start) / 1000 / 1000);
                                     let contents = strip_html_tags_slice(resp.get_body());
                                     match protocol {
                                         "http" => {
@@ -303,7 +303,39 @@ fn handle_file(path: &Path) -> Option<DomainEntry> {
                                     }
                                 },
                                 Err(err) => {
-                                    error!("Error: {:?}, cause: {}", err, format!("{}://{}/{}", protocol, domain, request_path));
+                                    // 2016-03-24 15:00:02 - dmilith - XXX: FIXME: NONDRY: UGLY:
+                                    match protocol {
+                                        "http" => {
+                                            match err.to_string().as_str() {
+                                                "Couldn't resolve host name" => {
+                                                    debug!("{} host resolve problem: {:?}, for: {}", protocol, err, format!("{}://{}/{}", protocol, domain, request_path));
+                                                    result.http_content_size = 0;
+                                                    result.http_status_code = 410; /* http "gone" error - for unresolvable domain */
+                                                },
+                                                _ => {
+                                                    debug!("{} host problem: {:?}, for: {} (404 fallback)", protocol, err, format!("{}://{}/{}", protocol, domain, request_path));
+                                                    result.http_content_size = 0;
+                                                    result.http_status_code = 404;
+                                                }
+                                            }
+                                        },
+                                        "https" => {
+                                            match err.to_string().as_str() {
+                                                "Couldn't resolve host name" => {
+                                                    debug!("{} host resolve problem: {:?}, for: {}", protocol, err, format!("{}://{}/{}", protocol, domain, request_path));
+                                                    result.http_content_size = 0;
+                                                    result.https_status_code = 410; /* http "gone" error - for unresolvable domain */
+                                                },
+                                                _ => {
+                                                    debug!("{} host problem: {:?}, for: {} (404 fallback)", protocol, err, format!("{}://{}/{}", protocol, domain, request_path));
+                                                    result.http_content_size = 0;
+                                                    result.https_status_code = 404;
+                                                }
+                                            }
+                                        },
+                                        _ => {
+                                        }
+                                    }
                                 }
                             }
                         }
