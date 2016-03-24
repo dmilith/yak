@@ -449,6 +449,7 @@ fn main() {
 }
 
 
+#[cfg(test)]
 #[test]
 fn language_detection_test() {
     let _ = env_logger::init();
@@ -463,6 +464,7 @@ fn language_detection_test() {
 }
 
 
+#[cfg(test)]
 #[test]
 fn regex_group_domain_extractor_test() {
     let _ = env_logger::init();
