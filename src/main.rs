@@ -341,11 +341,21 @@ fn read_path_from_env() -> String {
 }
 
 
+#[test]
+fn language_detection_test() {
+    let texts = vec!("Młody Amadeusz szedł suchą szosą.", "Mladý Amadeusz išiel suchej ceste.", "Young Amadeus went a dry road.");
+    let expected = vec!("pl", "sk", "en");
+    for (text, res) in texts.iter().zip(expected.iter()) {
+        match detect_language(text, Format::Text).0 { /* ignore detection reliability here */
+            Some(Lang(lang)) => assert!(String::from(lang) == res.to_string()),
+            _ => assert!(1 == 0, "Language not recognized properly!"),
+        }
+    }
+}
+
+
 fn main() {
     env_logger::init().unwrap();
-
-    let text = "Młody Amadeusz szedł suchą szosą.";
-    debug!("{:?}", detect_language(text, Format::Text));
 
     let path = read_path_from_env();
     debug!("Traversing path: {:?}", path);
