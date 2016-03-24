@@ -1,0 +1,19 @@
+#!/bin/sh
+
+
+export PATH=/Software/Rust/exports:/Software/Curl/exports:/Software/Git/exports:/bin:/usr/bin
+export CFLAGS="-I/Software/Curl/include"
+export LDFLAGS="-L/Software/Curl/lib"
+
+
+requirements () {
+    printf "This script requires Sofin installed! Please look here: https://bitbucket.org/verknowsys/sofin\n"
+    exit 1
+}
+
+test -x /usr/bin/s || requirements
+test -x /Software/Curl/bin/curl || s i Curl
+
+s disable && \
+cargo build --release && \
+s enable
