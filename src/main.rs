@@ -185,9 +185,13 @@ fn process_file(abs_path: &str, f: &File) -> Result<FileEntry, String> {
 
         match read_fragment(&mut reader, bytes_to_read) {
             Some(binary_content) => {
+                let sys_pw = match get_user_by_uid(metadata.uid()) {
+                    Some(user) => user,
+                    None => get_user_by_uid(0).unwrap(), /* this user must exists */
+                };
                 let an_owner = Owner {
                     origin: String::new(), /* XXX */
-                    name: String::from(get_user_by_uid(metadata.uid()).unwrap().name()),
+                    name: String::from(sys_pw.name()),
                     account_type: structs::AccountType::Regular,
                     uid: metadata.uid(),
                     gid: metadata.gid()
