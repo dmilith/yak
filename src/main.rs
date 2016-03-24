@@ -178,7 +178,10 @@ fn strip_html_tags_slice_test() {
 fn process_file(abs_path: &str, f: &File) -> Result<FileEntry, String> {
     if valid_file_extensions(abs_path) {
         let bytes_to_read = 16384u64;
-        let metadata = f.metadata().unwrap();
+        let metadata = match f.metadata() {
+            Ok(some) => some,
+            Err(err) => return Err(format!("Failed to read metadata of path: {}. Cause: {}", abs_path, err)),
+        };
         let mut reader = BufReader::new(f);
 
         match read_fragment(&mut reader, bytes_to_read) {
@@ -258,7 +261,10 @@ fn handle_file(path: &Path) -> Option<DomainEntry> {
                     /* default domain location: /home/{owner.name}/domains/{domain.name}/public_html/ */
                     let domain_from_path = Regex::new(r".*/domains/(.*)/public_html/.*").unwrap();
                     for _domain in domain_from_path.captures_iter(file_entry.path.as_ref()) {
-                        let domain = _domain.at(1).unwrap_or("");
+                        let domain = match _domain.at(1).unwrap_or("") {
+                            "" | "sharedip" | "default" | "suspended" => "localhost",
+                            dom => dom,
+                        };
                         let by = format!("{}/public_html/", domain);
 
                         let request_path = file_entry.path.split(by.as_str()).last().unwrap_or("/");
