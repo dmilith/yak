@@ -282,11 +282,11 @@ fn handle_file(path: &Path) -> Option<DomainEntry> {
                                 .timeout(10000)
                                 .connect_timeout(5000)
                                 .ssl_verifypeer(false)
-                                .get(format!("{}://{}/{}", protocol, domain, request_path))
+                                .get(format!("{}://{}{}", protocol, domain, request_path))
                                 .exec() {
                                 Ok(resp) => {
                                     let end = precise_time_ns();
-                                    debug!("Processed external request: {}://{}/{} in {}ms", protocol, domain, request_path, (end - start) / 1000 / 1000);
+                                    debug!("Processed external request: {}://{}{} in {}ms", protocol, domain, request_path, (end - start) / 1000 / 1000);
                                     let contents = strip_html_tags_slice(resp.get_body());
                                     match protocol {
                                         "http" => {
@@ -313,12 +313,12 @@ fn handle_file(path: &Path) -> Option<DomainEntry> {
                                         "http" => {
                                             match err.to_string().as_str() {
                                                 "Couldn't resolve host name" => {
-                                                    debug!("{} host resolve problem: {:?}, for: {}", protocol, err, format!("{}://{}/{}", protocol, domain, request_path));
+                                                    debug!("{} host resolve problem: {:?}, for: {}", protocol, err, format!("{}://{}{}", protocol, domain, request_path));
                                                     result.http_content_size = 0;
                                                     result.http_status_code = 410; /* http "gone" error - for unresolvable domain */
                                                 },
                                                 _ => {
-                                                    debug!("{} host problem: {:?}, for: {} (404 fallback)", protocol, err, format!("{}://{}/{}", protocol, domain, request_path));
+                                                    debug!("{} host problem: {:?}, for: {} (404 fallback)", protocol, err, format!("{}://{}{}", protocol, domain, request_path));
                                                     result.http_content_size = 0;
                                                     result.http_status_code = 404;
                                                 }
@@ -327,12 +327,12 @@ fn handle_file(path: &Path) -> Option<DomainEntry> {
                                         "https" => {
                                             match err.to_string().as_str() {
                                                 "Couldn't resolve host name" => {
-                                                    debug!("{} host resolve problem: {:?}, for: {}", protocol, err, format!("{}://{}/{}", protocol, domain, request_path));
+                                                    debug!("{} host resolve problem: {:?}, for: {}", protocol, err, format!("{}://{}{}", protocol, domain, request_path));
                                                     result.https_content_size = 0;
                                                     result.https_status_code = 410; /* http "gone" error - for unresolvable domain */
                                                 },
                                                 _ => {
-                                                    debug!("{} host problem: {:?}, for: {} (404 fallback)", protocol, err, format!("{}://{}/{}", protocol, domain, request_path));
+                                                    debug!("{} host problem: {:?}, for: {} (404 fallback)", protocol, err, format!("{}://{}{}", protocol, domain, request_path));
                                                     result.https_content_size = 0;
                                                     result.https_status_code = 404;
                                                 }
