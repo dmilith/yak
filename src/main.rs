@@ -385,7 +385,7 @@ fn main() {
     let walker = WalkDir::new(path)
         .follow_links(false)
         .max_depth(5)
-        .max_open(128)
+        .max_open(256)
         .into_iter();
 
     let mut files_processed = 0;
