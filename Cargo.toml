@@ -27,3 +27,6 @@ rand = "0.3"
 # language detection:
 [dependencies.cld2]
 git = "git://github.com/emk/rust-cld2"
+
+[dev-dependencies]
+env_logger = "0.3"
