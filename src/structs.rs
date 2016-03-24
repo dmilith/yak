@@ -1,7 +1,11 @@
+#![allow(dead_code)]
+// TODO: just to silence crate level of warnings from code that's unused (yet)
+
 use uuid::Uuid;
 use std::fmt;
 use std::fmt::Display;
-use rustc_serialize::{Decodable, Encodable, json};
+use rustc_serialize::{Encodable, json};
+
 
 
 #[derive(RustcDecodable, RustcEncodable, Debug, Clone)]
