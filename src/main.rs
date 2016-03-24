@@ -391,18 +391,17 @@ fn main() {
     let mut files_processed = 0;
     let mut files_skipped = 0;
     for entry in walker /* filter everything we don't have access to */
-                    .filter_map(|e| e.ok()) {
-        if  entry.file_type().is_file() &&
-            entry.path().to_str().unwrap_or("").contains("domains") {
-            match handle_file(entry.path()) {
-                Some(entry_ok) => {
-                    files_processed += 1;
-                    debug!("DBG: {}", entry_ok)
-                },
-                None => {
-                    files_skipped += 1;
-                },
-            }
+                    .filter_map(|e| e.ok())
+                    .filter(|e| e.metadata().unwrap().is_file())
+                    .filter(|e| e.path().to_str().unwrap_or("").contains("domains")) {
+        match handle_file(entry.path()) {
+            Some(entry_ok) => {
+                files_processed += 1;
+                info!("DomainEntry found: {}", entry_ok)
+            },
+            None => {
+                files_skipped += 1;
+            },
         }
     }
     let end = precise_time_ns();
