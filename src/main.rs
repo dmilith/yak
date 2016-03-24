@@ -262,13 +262,13 @@ fn handle_file(path: &Path) -> Option<DomainEntry> {
                             "" | "sharedip" | "default" | "suspended" => return None,
                             dom => dom,
                         };
-                        let by = format!("{}/public_html/", domain);
+                        let by = format!("{}/public_html", domain);
                         debug!("Domain detection: {}", domain);
 
                         let request_path = file_entry.path.split(by.as_str()).last().unwrap_or("/");
                         let mut result = DomainEntry {
                             file: file_entry.clone(),
-                            request_path: format!("/{}", request_path),
+                            request_path: format!("{}", request_path),
                             name: String::from(domain),
                             uuid: Uuid::new_v4(),
                             .. Default::default()
