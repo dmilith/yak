@@ -233,10 +233,10 @@ fn process_file(abs_path: &str, f: &File) -> Result<FileEntry, String> {
             },
 
             None =>
-                Err(String::from("Error reading file!")),
+                Err(String::from(format!("Error reading file: '{}'", abs_path))),
         }
     } else {
-        Err(String::from("Invalid file type"))
+        Err(String::from(format!("Invalid file type: '{}'", abs_path)))
     }
 }
 
@@ -300,7 +300,7 @@ fn handle_file(path: &Path) -> Option<DomainEntry> {
                                     }
                                 },
                                 Err(err) => {
-                                    error!("Error: {:?}, caused on: {}", err, format!("{}://{}/{}", protocol, domain, request_path));
+                                    error!("Error: {:?}, cause: {}", err, format!("{}://{}/{}", protocol, domain, request_path));
                                 }
                             }
                         }
@@ -309,18 +309,17 @@ fn handle_file(path: &Path) -> Option<DomainEntry> {
                     None
                 },
                 Err(err) => {
-                    match err.as_ref() {
-                        "Invalid file type" => None, /* report nothing */
-                        _ => { /* yell about everything else */
-                            error!("Err: {:?}", err);
-                            None
-                        },
+                    if err.as_str().starts_with("Invalid file type") {
+                        None /* report nothing */
+                    } else { /* yell about everything else */
+                        error!("Err processing file: {}, cause: {:?}", name, err);
+                        None
                     }
                 },
             }
         },
         Err(e) => {
-            error!("Error in file IO: {:?}", e);
+            error!("Error in file: '{}', cause: {:?}.", name, e);
             None
         },
     }
