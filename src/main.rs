@@ -252,12 +252,13 @@ fn handle_file(path: &Path) -> Option<DomainEntry> {
                 Ok(file_entry) => {
                     /* default domain location: /home/{owner.name}/domains/{domain.name}/public_html/ */
                     let domain_from_path = Regex::new(r".*/domains/(.*)/public_html/.*").unwrap();
-                    for _domain in domain_from_path.captures_iter(file_entry.path.as_ref()) {
+                    for _domain in domain_from_path.captures_iter(file_entry.path.as_str()) {
                         let domain = match _domain.at(1).unwrap_or("") {
                             "" | "sharedip" | "default" | "suspended" => return None,
                             dom => dom,
                         };
                         let by = format!("{}/public_html/", domain);
+                        debug!("Domain detection: {}", domain);
 
                         let request_path = file_entry.path.split(by.as_str()).last().unwrap_or("/");
                         let mut result = DomainEntry {
@@ -267,6 +268,8 @@ fn handle_file(path: &Path) -> Option<DomainEntry> {
                             uuid: Uuid::new_v4(),
                             .. Default::default()
                         };
+                        debug!("Partial domain entry: {}", result);
+
                         let request_protocols = vec!("http", "https");
                         for protocol in request_protocols {
                             let start = precise_time_ns();
