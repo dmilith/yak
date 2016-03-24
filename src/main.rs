@@ -352,7 +352,7 @@ fn main() {
     let start = precise_time_ns();
     let walker = WalkDir::new(path)
         .follow_links(false)
-        .max_depth(4)
+        .max_depth(5)
         .max_open(128)
         .into_iter();
 
