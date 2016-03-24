@@ -254,7 +254,7 @@ fn handle_file(path: &Path) -> Option<DomainEntry> {
                     let domain_from_path = Regex::new(r".*/domains/(.*)/public_html/.*").unwrap();
                     for _domain in domain_from_path.captures_iter(file_entry.path.as_ref()) {
                         let domain = match _domain.at(1).unwrap_or("") {
-                            "" | "sharedip" | "default" | "suspended" => "localhost",
+                            "" | "sharedip" | "default" | "suspended" => return None,
                             dom => dom,
                         };
                         let by = format!("{}/public_html/", domain);
