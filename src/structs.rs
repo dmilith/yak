@@ -62,6 +62,20 @@ pub struct DomainEntry {
     // pub request_time: i64,
 }
 
+
+impl Default for Owner {
+    fn default() -> Owner {
+        Owner {
+            name: String::new(),
+            account_type: AccountType::Regular,
+            origin: String::new(),
+            uid: 0,
+            gid: 0,
+        }
+    }
+}
+
+
 impl Default for FileEntry {
     fn default() -> FileEntry {
         FileEntry {
