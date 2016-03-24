@@ -343,19 +343,6 @@ fn read_path_from_env() -> String {
 }
 
 
-#[test]
-fn language_detection_test() {
-    let texts = vec!("Młody Amadeusz szedł suchą szosą.", "Mladý Amadeusz išiel suchej ceste.", "Young Amadeus went a dry road.");
-    let expected = vec!("pl", "sk", "en");
-    for (text, res) in texts.iter().zip(expected.iter()) {
-        match detect_language(text, Format::Text).0 { /* ignore detection reliability here */
-            Some(Lang(lang)) => assert!(lang.to_string() == res.to_string()),
-            _ => assert!(1 == 0, "Language not recognized properly!"),
-        }
-    }
-}
-
-
 fn main() {
     env_logger::init().unwrap();
 
@@ -396,4 +383,54 @@ fn main() {
     //     }
     // });
     // server.listen("127.0.0.1:6000");
+}
+
+
+#[test]
+fn language_detection_test() {
+    let _ = env_logger::init();
+    let texts = vec!("Młody Amadeusz szedł suchą szosą.", "Mladý Amadeusz išiel suchej ceste.", "Young Amadeus went a dry road.");
+    let expected = vec!("pl", "sk", "en");
+    for (text, res) in texts.iter().zip(expected.iter()) {
+        match detect_language(text, Format::Text).0 { /* ignore detection reliability here */
+            Some(Lang(lang)) => assert!(lang.to_string() == res.to_string()),
+            _ => assert!(1 == 0, "Language not recognized properly!"),
+        }
+    }
+}
+
+
+#[test]
+fn regex_group_domain_extractor_test() {
+    let _ = env_logger::init();
+    let domain_correct = vec!(
+        "/home/user/domains/domain.tld.my.pl/public_html/file.php",
+        "/home/user2/domains/domena.pl/public_html/index.html",
+    );
+    let correct_results = vec!(
+        "domain.tld.my.pl",
+        "domena.pl"
+    );
+    for (file, res) in domain_correct.iter().zip(correct_results.iter()) {
+        let entry = structs::FileEntry {
+            owner: Owner {
+                origin: String::new(), /* XXX */
+                name: String::from("root"),
+                account_type: structs::AccountType::Admin,
+                .. Default::default()
+            },
+            path: file.to_string(),
+            size: 123,
+            mode: 0711 as u32,
+            modified: 1,
+            encoding: "UTF-8".to_string(),
+            .. Default::default()
+        };
+
+        let domain_from_path = Regex::new(r".*/domains/(.*)/public_html/.*").unwrap();
+        for _domain in domain_from_path.captures_iter(entry.path.as_str()) {
+            debug!("Domain: {:?}", _domain.at(1).unwrap());
+            assert!(_domain.at(1).unwrap() == res.to_string());
+        }
+    }
 }
