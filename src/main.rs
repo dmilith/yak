@@ -253,7 +253,7 @@ fn handle_file(path: &Path) -> Option<DomainEntry> {
                     /* default domain location: /home/{owner.name}/domains/{domain.name}/public_html/ */
                     let domain_from_path = Regex::new(r".*/domains/(.*)/public_html/.*").unwrap();
                     for _domain in domain_from_path.captures_iter(file_entry.path.as_str()) {
-                        let domain = match _domain.at(1).unwrap_or("") {
+                        let domain = match _domain.at(1).unwrap() {
                             "" | "sharedip" | "default" | "suspended" => return None,
                             dom => dom,
                         };
