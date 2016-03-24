@@ -347,7 +347,7 @@ fn language_detection_test() {
     let expected = vec!("pl", "sk", "en");
     for (text, res) in texts.iter().zip(expected.iter()) {
         match detect_language(text, Format::Text).0 { /* ignore detection reliability here */
-            Some(Lang(lang)) => assert!(String::from(lang) == res.to_string()),
+            Some(Lang(lang)) => assert!(lang.to_string() == res.to_string()),
             _ => assert!(1 == 0, "Language not recognized properly!"),
         }
     }
