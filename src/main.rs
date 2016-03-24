@@ -37,7 +37,7 @@ use rustc_serialize::json; // Encodable, Decodable
 use std::env;
 use std::io::prelude::*;
 use std::io::{BufReader, BufWriter};
-use std::fs::File;
+use std::fs::{File, OpenOptions};
 use std::path::Path;
 use std::collections::{HashSet};
 use std::os::unix::fs::MetadataExt;
@@ -394,12 +394,31 @@ fn main() {
                     .filter(|e| e.metadata().unwrap().is_file() && e.path().to_str().unwrap_or("").contains("domains")) {
         match handle_file(entry.path()) {
             Some(entry_ok) => {
-                let output_file = format!("/root/domain_${}_owner_{}.json", entry_ok.name, entry_ok.file.owner.name);
-                let f = File::create(output_file.clone()).unwrap();
-                let mut writer = BufWriter::new(f);
-                writer.write(entry_ok.to_string().as_bytes()).unwrap();
+                let output_file = format!("/root/domain_{}_owner_{}.json", entry_ok.name, entry_ok.file.owner.name);
+                match OpenOptions::new()
+                                    .read(false)
+                                    .create(true)
+                                    .write(true)
+                                    .append(true)
+                                    .open(output_file.clone()) {
+                    Ok(f) => {
+                        let mut writer = BufWriter::new(f);
+                        let entr = entry_ok.to_string() + ",";
+                        match writer.write(entr.as_bytes()) {
+                            Ok(some) => {
+                                info!("DomainEntry: {} has been stored in: {} ({})", entry_ok, output_file, some)
+                            },
+                            Err(err) => {
+                                error!("Error: {}, file: {}", err, output_file)
+                            }
+                        }
+                    },
 
-                info!("DomainEntry: {} stored to file: {}", entry_ok, output_file);
+                    Err(err) => {
+                        error!("File open error: {}, file: {}", err, output_file)
+                    }
+                }
+
                 files_processed += 1;
             },
             None => {
