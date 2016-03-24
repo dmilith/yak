@@ -18,7 +18,10 @@ extern crate core;
 extern crate rustc_serialize;
 extern crate users;
 extern crate curl;
+extern crate rsgenetic;
+extern crate rand;
 
+mod structs;
 
 use uuid::Uuid;
 use regex::Regex;
@@ -26,12 +29,11 @@ use core::result::Result;
 use time::*;
 use ammonia::*;
 use cld2::{detect_language, Format, Reliable, Lang};
-use encoding::*;
+use encoding::types::*;
 use encoding::all::*;
-use walkdir::{DirEntry, WalkDir, WalkDirIterator};
-use users::{get_user_by_uid, get_current_uid};
-use rustc_serialize::{Decodable, Encodable, json};
-
+use walkdir::{WalkDir}; // DirEntry, WalkDirIterator
+use users::get_user_by_uid;
+use rustc_serialize::json; // Encodable, Decodable
 use std::env;
 use std::io::prelude::*;
 use std::io::BufReader;
@@ -41,11 +43,8 @@ use std::collections::{HashSet};
 use std::os::unix::fs::MetadataExt;
 use curl::http;
 
-
-mod structs;
+// local
 use structs::*;
-
-
 
 
 fn detect_encoding(vec: &Vec<u8>) -> Option<EncodingRef> {
