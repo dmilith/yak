@@ -219,17 +219,10 @@ fn process_file(abs_path: &str, f: &File) -> Result<FileEntry, String> {
                                 Ok(entry)
                             },
 
-                            (None, Reliable) => {
-                                entry.sha1 = sha1_of(buf);
-                                entry.lang = String::new();
-                                debug!("Reliable no detection: {}", entry.to_string());
-                                Ok(entry)
-                            },
-
                             (None, _) => { /* not detected properly or value isn't reliable enough to tell */
                                 entry.sha1 = sha1_of(buf);
-                                entry.lang = String::new();
-                                debug!("Unreliable no detection: {}", entry.to_string());
+                                entry.lang = String::from("en");
+                                debug!("No detection for: {}. Doing fallback to 'en'", entry.to_string());
                                 Ok(entry)
                             }
                         }
