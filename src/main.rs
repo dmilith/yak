@@ -185,25 +185,25 @@ fn process_file(abs_path: &str, f: &File) -> Result<FileEntry, String> {
 
         match read_fragment(&mut reader, bytes_to_read) {
             Some(binary_content) => {
+                let an_owner = Owner {
+                    origin: String::new(), /* XXX */
+                    name: String::from(get_user_by_uid(metadata.uid()).unwrap().name()),
+                    account_type: structs::AccountType::Regular,
+                    uid: metadata.uid(),
+                    gid: metadata.gid()
+                };
+                let buf = strip_html_tags(&binary_content);
+                let mut entry = structs::FileEntry {
+                    owner: an_owner,
+                    path: abs_path.to_string(),
+                    size: metadata.size(),
+                    mode: metadata.mode() as u32,
+                    modified: get_time().sec - metadata.mtime(),
+                    .. Default::default()
+                };
                 match detect_encoding(&binary_content) {
                     Some(enc) => {
-                        let an_owner = Owner {
-                            origin: String::new(), /* XXX */
-                            name: String::from(get_user_by_uid(metadata.uid()).unwrap().name()),
-                            account_type: structs::AccountType::Regular,
-                            uid: metadata.uid(),
-                            gid: metadata.gid()
-                        };
-                        let buf = strip_html_tags(&binary_content);
-                        let mut entry = structs::FileEntry {
-                            owner: an_owner,
-                            path: abs_path.to_string(),
-                            size: metadata.size(),
-                            mode: metadata.mode() as u32,
-                            modified: get_time().sec - metadata.mtime(),
-                            encoding: enc.name().to_string(),
-                            .. Default::default()
-                        };
+                        entry.encoding = enc.name().to_string();
                         match detect_language(&buf, Format::Text) {
                             (Some(Lang(lang)), Reliable) => {
                                 entry.sha1 = sha1_of(buf);
@@ -228,7 +228,12 @@ fn process_file(abs_path: &str, f: &File) -> Result<FileEntry, String> {
                         }
                     },
 
-                    None => Err(String::from("None")),
+                    None => {
+                        entry.sha1 = sha1_of(buf);
+                        entry.encoding = "ASCII".to_string();
+                        entry.lang = "en".to_string();
+                        Ok(entry)
+                    },
                 }
             },
 
