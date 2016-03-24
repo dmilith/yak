@@ -273,8 +273,8 @@ fn handle_file(path: &Path) -> Option<DomainEntry> {
                         for protocol in request_protocols {
                             let start = precise_time_ns();
                             match http::handle()
-                                .follow_location(1)
                                 .connect_timeout(3000)
+                                .follow_location(0)
                                 .ssl_verifypeer(false)
                                 .get(format!("{}://{}/{}", protocol, domain, request_path))
                                 .exec() {
