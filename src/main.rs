@@ -268,7 +268,6 @@ fn handle_file(path: &Path) -> Option<DomainEntry> {
                             uuid: Uuid::new_v4(),
                             .. Default::default()
                         };
-                        debug!("Partial domain entry: {}", result);
 
                         let request_protocols = vec!("http", "https");
                         for protocol in request_protocols {
