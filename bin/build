@@ -6,6 +6,12 @@ export CFLAGS="-I/Software/Curl/include"
 export LDFLAGS="-L/Software/Curl/lib"
 
 
+if [ -z "$1" ]; then
+    task="build"
+else
+    task="$1"
+fi
+
 requirements () {
     printf "This script requires Sofin installed! Please look here: https://bitbucket.org/verknowsys/sofin\n"
     exit 1
@@ -15,5 +21,5 @@ test -x /usr/bin/s || requirements
 test -x /Software/Curl/bin/curl || s i Curl
 
 s disable && \
-cargo build --release && \
+cargo $task --release && \
 s enable
