@@ -18,6 +18,8 @@ users = "0.5"
 curl = "0.2"
 log = "0.3"
 env_logger = "0.3"
+rsgenetic = "1.1"
+rand = "0.3"
 # nickel = "*"
 # websocket = "0.15.0"
 
