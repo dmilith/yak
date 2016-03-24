@@ -323,12 +323,12 @@ fn handle_file(path: &Path) -> Option<DomainEntry> {
                                             match err.to_string().as_str() {
                                                 "Couldn't resolve host name" => {
                                                     debug!("{} host resolve problem: {:?}, for: {}", protocol, err, format!("{}://{}/{}", protocol, domain, request_path));
-                                                    result.http_content_size = 0;
+                                                    result.https_content_size = 0;
                                                     result.https_status_code = 410; /* http "gone" error - for unresolvable domain */
                                                 },
                                                 _ => {
                                                     debug!("{} host problem: {:?}, for: {} (404 fallback)", protocol, err, format!("{}://{}/{}", protocol, domain, request_path));
-                                                    result.http_content_size = 0;
+                                                    result.https_content_size = 0;
                                                     result.https_status_code = 404;
                                                 }
                                             }
