@@ -395,8 +395,8 @@ fn main() {
         info!("Traversing path: '{}'", path);
         let walker = WalkDir::new(path)
             .follow_links(false)
-            .max_depth(5)
-            .max_open(256)
+            .max_depth(4)
+            .max_open(512)
             .into_iter();
 
         for entry in walker /* filter everything we don't have access to */
