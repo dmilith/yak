@@ -371,15 +371,10 @@ fn handle_file(path: &Path) -> Option<DomainEntry> {
 
 
 fn read_path_from_env() -> String {
-    let key = "HOME";
-    let home = match env::var(key) {
-        Ok(val) => val,
-        Err(_) => String::from("/home/"),
-    };
     let key = "TRAV";
     match env::var(key) {
         Ok(val) => val,
-        Err(_) => home, /* use ~ as fallback if no value of TRAV given */
+        Err(_) => String::from("/home/"), /* use ~ as fallback if no value of TRAV given */
     }
 }
 
