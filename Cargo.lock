@@ -7,6 +7,7 @@ dependencies = [
  "curl 0.2.18 (registry+https://github.com/rust-lang/crates.io-index)",
  "encoding 0.2.32 (registry+https://github.com/rust-lang/crates.io-index)",
  "env_logger 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "flame 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 0.1.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.3.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -64,6 +65,14 @@ dependencies = [
  "libc 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 0.1.58 (registry+https://github.com/rust-lang/crates.io-index)",
  "toml 0.1.28 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "clock_ticks"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "libc 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -165,6 +174,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "flame"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "clock_ticks 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "futf"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -219,6 +236,11 @@ dependencies = [
 [[package]]
 name = "lazy_static"
 version = "0.1.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "libc"
+version = "0.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
