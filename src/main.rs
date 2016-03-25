@@ -375,7 +375,7 @@ fn read_path_from_env() -> String {
     let key = "TRAV";
     match env::var(key) {
         Ok(val) => val,
-        Err(_) => String::from("/home/"), /* use ~ as fallback if no value of TRAV given */
+        Err(_) => String::from("/home"), /* use ~ as fallback if no value of TRAV given */
     }
 }
 
