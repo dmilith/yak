@@ -287,6 +287,7 @@ fn handle_file(path: &Path) -> Option<DomainEntry> {
                                 .connect_timeout(5000)
                                 .ssl_verifypeer(false)
                                 .get(format!("{}://{}{}", protocol, domain, request_path))
+                                .header("User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:10.0) Gecko/20100101 Firefox/10.0")
                                 .exec() {
                                 Ok(resp) => {
                                     let end = precise_time_ns();
