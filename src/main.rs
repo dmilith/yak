@@ -32,9 +32,9 @@ use cld2::{detect_language, Format, Reliable, Lang};
 use encoding::types::*;
 use encoding::all::*;
 use walkdir::{WalkDir}; // DirEntry, WalkDirIterator
+use users::{User, AllUsers};
 use users::get_user_by_uid;
 use rustc_serialize::json; // Encodable, Decodable
-use std::env;
 use std::io::prelude::*;
 use std::io::{BufReader, BufWriter};
 use std::fs::{File, OpenOptions};
@@ -371,12 +371,10 @@ fn handle_file(path: &Path) -> Option<DomainEntry> {
 }
 
 
-fn read_path_from_env() -> String {
-    let key = "TRAV";
-    match env::var(key) {
-        Ok(val) => val,
-        Err(_) => String::from("/home"), /* use ~ as fallback if no value of TRAV given */
-    }
+fn fetch_users() -> Vec<User> {
+    let mut users: Vec<User> = unsafe { AllUsers::new() }.collect();
+    users.sort_by(|a, b| a.name().cmp(&b.name()));
+    users
 }
 
 
@@ -442,6 +440,21 @@ fn main() {
     //     }
     // });
     // server.listen("127.0.0.1:6000");
+}
+
+
+#[cfg(test)]
+#[test]
+fn fetch_users_test() {
+    for user in fetch_users() {
+        if user.name() == "root" ||
+           user.name() == "toor" {
+            assert!(user.uid() == 0);
+        } else {
+            assert!(user.uid() > 0);
+            assert!(user.name().len() > 0);
+        }
+    }
 }
 
 
