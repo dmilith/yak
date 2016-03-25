@@ -381,55 +381,61 @@ fn fetch_users() -> Vec<User> {
 fn main() {
     env_logger::init().unwrap();
 
-    let path = read_path_from_env();
-    debug!("Traversing path: {:?}", path);
-
     let start = precise_time_ns();
-    let walker = WalkDir::new(path)
-        .follow_links(false)
-        .max_depth(5)
-        .max_open(256)
-        .into_iter();
-
     let mut files_processed = 0;
     let mut files_skipped = 0;
-    for entry in walker /* filter everything we don't have access to */
-                    .filter_map(|e| e.ok())
-                    .filter(|e| e.metadata().unwrap().is_file() && e.path().to_str().unwrap_or("").contains("domains")) {
-        match handle_file(entry.path()) {
-            Some(entry_ok) => {
-                let output_file = format!("/root/domain_{}_owner_{}.json", entry_ok.name, entry_ok.file.owner.name);
-                match OpenOptions::new()
-                                    .read(false)
-                                    .create(true)
-                                    .write(true)
-                                    .append(true)
-                                    .open(output_file.clone()) {
-                    Ok(f) => {
-                        let mut writer = BufWriter::new(f);
-                        let entr = entry_ok.to_string() + ",";
-                        match writer.write(entr.as_bytes()) {
-                            Ok(some) => {
-                                info!("DomainEntry: {} has been stored in: {} ({})", entry_ok, output_file, some)
-                            },
-                            Err(err) => {
-                                error!("Error: {}, file: {}", err, output_file)
+
+    for user in fetch_users() {
+        let path = format!("/home/{}/", user.name());
+        if ! Path::new(path.as_str()).exists() {
+            debug!("Path doesn't exists: {}. Skipping", path);
+            continue
+        }
+
+        info!("Traversing path: '{}'", path);
+        let walker = WalkDir::new(path)
+            .follow_links(false)
+            .max_depth(5)
+            .max_open(256)
+            .into_iter();
+
+        for entry in walker /* filter everything we don't have access to */
+                        .filter_map(|e| e.ok())
+                        .filter(|e| e.metadata().unwrap().is_file() && e.path().to_str().unwrap_or("").contains("domains")) {
+            match handle_file(entry.path()) {
+                Some(entry_ok) => {
+                    let output_file = format!("{}_{}.json", entry_ok.file.owner.name, entry_ok.name);
+                    match OpenOptions::new()
+                                        .read(true)
+                                        .create(true)
+                                        .write(true)
+                                        .append(true)
+                                        .open(output_file.clone()) {
+                        Ok(f) => {
+                            let mut writer = BufWriter::new(f);
+                            let entr = entry_ok.to_string() + ",";
+                            match writer.write(entr.as_bytes()) {
+                                Ok(some) => {
+                                    info!("DomainEntry: {} has been stored in: {} ({})", entry_ok, output_file, some)
+                                },
+                                Err(err) => {
+                                    error!("Error: {}, file: {}", err, output_file)
+                                }
                             }
+                        },
+                        Err(err) => {
+                            error!("File open error: {}, file: {}", err, output_file)
                         }
-                    },
-
-                    Err(err) => {
-                        error!("File open error: {}, file: {}", err, output_file)
                     }
-                }
-
-                files_processed += 1;
-            },
-            None => {
-                files_skipped += 1;
-            },
+                    files_processed += 1;
+                },
+                None => {
+                    files_skipped += 1;
+                },
+            }
         }
     }
+
     let end = precise_time_ns();
     info!("Traverse for: {} files, (skipped: {} files), elapsed: {} miliseconds", files_processed, files_skipped, (end - start) / 1000 / 1000);
 
