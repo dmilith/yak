@@ -20,6 +20,7 @@ extern crate users;
 extern crate curl;
 extern crate rsgenetic;
 extern crate rand;
+extern crate flame;
 
 mod structs;
 
@@ -402,6 +403,10 @@ fn main() {
         for entry in walker /* filter everything we don't have access to */
                         .filter_map(|e| e.ok())
                         .filter(|e| e.metadata().unwrap().is_file() && e.path().to_str().unwrap_or("").contains("domains")) {
+
+            let entry_name = format!("path: {}", entry.path().to_str().unwrap_or("NO-FILE"));
+            flame::start(entry_name.clone());
+
             match handle_file(entry.path()) {
                 Some(entry_ok) => {
                     let output_file = format!("{}_{}.json", entry_ok.file.owner.name, entry_ok.name);
@@ -412,6 +417,8 @@ fn main() {
                                         .append(true)
                                         .open(output_file.clone()) {
                         Ok(f) => {
+                            let store_json = format!("json-file-dump: {}", output_file);
+                            flame::start(store_json.clone());
                             let mut writer = BufWriter::new(f);
                             let entr = entry_ok.to_string() + ",";
                             match writer.write(entr.as_bytes()) {
@@ -422,11 +429,22 @@ fn main() {
                                     error!("Error: {}, file: {}", err, output_file)
                                 }
                             }
+                            flame::end(store_json);
                         },
                         Err(err) => {
                             error!("File open error: {}, file: {}", err, output_file)
                         }
                     }
+
+                    /* write flamegraph */
+                    flame::end(entry_name.clone());
+                    let graph_file_name = format!("{}-{}.svg", user.name(), entry_ok.name);
+                    match flame::dump_svg(&mut File::create(graph_file_name).unwrap()) {
+                        Ok(_) => info!("Graph stored successfully"),
+                        Err(err) => error!("Failed to store graph: {}", err),
+                    }
+                    flame::clear();
+
                     files_processed += 1;
                 },
                 None => {
