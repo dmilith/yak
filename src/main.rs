@@ -416,7 +416,7 @@ fn main() {
                             let entr = entry_ok.to_string() + ",";
                             match writer.write(entr.as_bytes()) {
                                 Ok(some) => {
-                                    info!("DomainEntry: {} has been stored in: {} ({})", entry_ok, output_file, some)
+                                    info!("DomainEntry: {} has been stored in: {} ({} bytes)", entry_ok, output_file, some)
                                 },
                                 Err(err) => {
                                     error!("Error: {}, file: {}", err, output_file)
