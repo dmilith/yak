@@ -12,17 +12,21 @@ extern crate encoding;
 extern crate time;
 extern crate uuid;
 extern crate core;
-extern crate rustc_serialize;
 extern crate users;
 extern crate curl;
 extern crate rand;
 extern crate ammonia;
 extern crate sha1;
 extern crate flame;
+extern crate term;
+extern crate difference;
+extern crate flate2;
+extern crate bincode;
+extern crate rustc_serialize;
+
 // extern crate rsgenetic;
 // #[macro_use] extern crate nickel;
 // use nickel::Nickel;
-
 use std::os::unix::fs::MetadataExt; /* Metadata trait */
 use uuid::Uuid;
 use regex::Regex;
@@ -37,6 +41,10 @@ use std::fs::{File, OpenOptions};
 use std::path::Path;
 use curl::http;
 use rustc_serialize::json;
+use flate2::Compression;
+use flate2::read::GzDecoder;
+use flate2::write::ZlibEncoder;
+use bincode::rustc_serialize::{encode, decode};
 
 // local
 mod structs;
