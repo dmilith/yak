@@ -302,7 +302,7 @@ fn main() {
                             let entr = entry_ok.to_string() + ",";
                             match writer.write(entr.as_bytes()) {
                                 Ok(some) => {
-                                    info!("DomainEntry: {} has been stored in: {} ({} bytes)", entry_ok, output_file, some)
+                                    debug!("DomainEntry: {} has been stored in: {} ({} bytes)", entry_ok, output_file, some)
                                 },
                                 Err(err) => {
                                     error!("Error: {}, file: {}", err, output_file)
@@ -319,8 +319,8 @@ fn main() {
                     flame::end(entry_name.clone());
                     let graph_file_name = format!("{}-{}.svg", user.name(), entry_ok.name);
                     match flame::dump_svg(&mut File::create(graph_file_name).unwrap()) {
-                        Ok(_) => info!("Graph stored successfully"),
-                        Err(err) => error!("Failed to store graph: {}", err),
+                        Ok(_) => debug!("Graph stored successfully"),
+                        Err(err) => warn!("Failed to store graph: {}", err),
                     }
                     flame::clear();
 
