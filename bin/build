@@ -1,9 +1,9 @@
 #!/bin/sh
 
 
-export PATH=/Software/Rust/exports:/Software/Curl/exports:/Software/Git/exports:/bin:/usr/bin
-export CFLAGS="-I/Software/Curl/include"
-export LDFLAGS="-L/Software/Curl/lib"
+export PATH=/Software/Rust/exports:/Software/Git/exports:/bin:/usr/bin
+export CFLAGS="-I/Software/Rust/include"
+export LDFLAGS="-L/Software/Rust/lib"
 
 
 if [ -z "$1" ]; then
@@ -18,7 +18,7 @@ requirements () {
 }
 
 test -x /usr/bin/s || requirements
-test -x /Software/Curl/bin/curl || s i Curl
+test -x /Software/Rust/bin/rustc || s i Rust
 
 s disable && \
 cargo $task --release && \
