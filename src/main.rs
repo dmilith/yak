@@ -299,7 +299,7 @@ fn main() {
                             let store_json = format!("json-file-dump: {}", output_file);
                             flame::start(store_json.clone());
                             let mut writer = BufWriter::new(f);
-                            let entr = entry_ok.to_string() + ",";
+                            let entr = entry_ok.to_string();
                             match writer.write(entr.as_bytes()) {
                                 Ok(some) => {
                                     debug!("DomainEntry: {} has been stored in: {} ({} bytes)", entry_ok, output_file, some)
