@@ -49,8 +49,10 @@ use bincode::rustc_serialize::{encode, decode};
 // local
 mod structs;
 mod utils;
+mod base;
 use utils::*;
 use structs::*;
+use base::*;
 
 
 fn process_file(abs_path: &str, f: &File) -> Result<FileEntry, String> {
