@@ -21,8 +21,11 @@ env_logger = "0.3"
 rsgenetic = "1.1"
 rand = "0.3"
 flame = "0.1"
+difference = "0.4"
+bincode = "0.5"
+term = "0.4"
+flate2 = { version = "0.2", features = ["zlib"], default-features = false }
 # nickel = "*"
-# websocket = "0.15.0"
 
 
 # language detection:
