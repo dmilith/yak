@@ -1,178 +1,48 @@
-#[macro_use] extern crate lazy_static; // ensure that regular expressions are compiled exactly once
-extern crate regex;
+#[macro_use]
+extern crate lazy_static; // ensure that regular expressions are compiled exactly once
 
 #[macro_use]
 extern crate log;
-extern crate env_logger;
 
-// #[macro_use] extern crate nickel;
-// use nickel::Nickel;
+extern crate env_logger;
+extern crate regex;
 extern crate walkdir;
 extern crate cld2;
 extern crate encoding;
-extern crate ammonia;
 extern crate time;
-extern crate sha1;
 extern crate uuid;
 extern crate core;
 extern crate rustc_serialize;
 extern crate users;
 extern crate curl;
-extern crate rsgenetic;
 extern crate rand;
+extern crate ammonia;
+extern crate sha1;
 extern crate flame;
+// extern crate rsgenetic;
+// #[macro_use] extern crate nickel;
+// use nickel::Nickel;
 
-mod structs;
-
+use std::os::unix::fs::MetadataExt; /* Metadata trait */
 use uuid::Uuid;
 use regex::Regex;
 use core::result::Result;
-use time::*;
-use ammonia::*;
+use time::{get_time, precise_time_ns};
 use cld2::{detect_language, Format, Reliable, Lang};
-use encoding::types::*;
-use encoding::all::*;
 use walkdir::{WalkDir}; // DirEntry, WalkDirIterator
-use users::{User, AllUsers};
 use users::get_user_by_uid;
-use rustc_serialize::json; // Encodable, Decodable
-use std::io::prelude::*;
+use std::io::prelude::{Read,Write};
 use std::io::{BufReader, BufWriter};
 use std::fs::{File, OpenOptions};
 use std::path::Path;
-use std::collections::{HashSet};
-use std::os::unix::fs::MetadataExt;
 use curl::http;
+use rustc_serialize::json;
 
 // local
+mod structs;
+mod utils;
+use utils::*;
 use structs::*;
-
-
-fn detect_encoding(vec: &Vec<u8>) -> Option<EncodingRef> {
-    let possible_encodings = vec!(
-        ASCII as EncodingRef,
-        WINDOWS_1250 as EncodingRef,
-        UTF_8 as EncodingRef,
-        UTF_16LE as EncodingRef,
-        UTF_16BE as EncodingRef,
-        ISO_8859_1 as EncodingRef,
-        ISO_8859_2 as EncodingRef,
-        ISO_8859_3 as EncodingRef,
-        ISO_8859_4 as EncodingRef,
-        ISO_8859_5 as EncodingRef,
-        ISO_8859_6 as EncodingRef,
-        ISO_8859_7 as EncodingRef,
-        ISO_8859_8 as EncodingRef,
-        ISO_8859_10 as EncodingRef,
-        ISO_8859_13 as EncodingRef,
-        ISO_8859_14 as EncodingRef,
-        ISO_8859_15 as EncodingRef,
-        ISO_8859_16 as EncodingRef,
-        KOI8_R as EncodingRef,
-        KOI8_U as EncodingRef,
-        MAC_ROMAN as EncodingRef,
-        WINDOWS_874 as EncodingRef,
-        WINDOWS_949 as EncodingRef,
-        WINDOWS_1251 as EncodingRef,
-        WINDOWS_1252 as EncodingRef,
-        WINDOWS_1253 as EncodingRef,
-        WINDOWS_1254 as EncodingRef,
-        WINDOWS_1255 as EncodingRef,
-        WINDOWS_1256 as EncodingRef,
-        WINDOWS_1257 as EncodingRef,
-        WINDOWS_1258 as EncodingRef,
-    );
-    let in_trap = DecoderTrap::Strict;
-
-    for encoding in possible_encodings {
-        match encoding.decode(&vec, in_trap) {
-            Ok(_) => return Some(encoding),
-            Err(_) => Some(ERROR),
-        };
-    }
-    None
-}
-
-
-fn read_fragment<R>(reader: R, bytes_to_read: u64) -> Option<Vec<u8>> where R: Read {
-    let mut buf = vec![];
-    let mut chunk = reader.take(bytes_to_read);
-    match chunk.read_to_end(&mut buf) {
-        Ok(_) =>
-            Some(buf),
-        _ =>
-            None,
-    }
-}
-
-
-fn valid_file_extensions(name: &str) -> bool {
-    lazy_static! {
-        /*
-        Regex will be compiled when it's used for the first time
-        On subsequent uses, it will reuse the previous compilation
-        */
-        static ref RE: Regex = Regex::new(r"\.(php[0-9]*|[s]?htm[l0-9]*|txt|inc|py|pl|rb|sh|[xyua]ml|htaccess|rss|[s]?css|js|mo|po|ini|ps|l?a?tex)$").unwrap();
-    }
-    RE.is_match(name)
-}
-
-
-#[test]
-fn matcher_test() {
-    for valid in vec!(
-        "somestrange123.file.php", ".htm", "a.txt", "file.html", "file.htm4",
-        "exym.pl", "404.shtml", "album.rss", "a.ps", "a.latex", "mr.tex"
-    ) {
-        assert!(valid_file_extensions(valid));
-    }
-    for invalid in vec!("file.plo", "file.pyc", ".phpa", "somefile", "file.pshtml") {
-        assert!(!valid_file_extensions(invalid));
-    }
-}
-
-
-fn sha1_of(input: String) -> String {
-    let mut m = sha1::Sha1::new();
-    m.update(input.as_bytes());
-    m.hexdigest()
-}
-
-
-/* html tag cleaner PoC: */
-fn strip_html_tags(binary_content: &Vec<u8>) -> String {
-    let a_buf = String::from_utf8_lossy(&binary_content);
-    lazy_static! {
-        static ref TAGS: Ammonia<'static> = Ammonia{
-            tags: HashSet::new(), /* list of tags that may stay in content - strip all */
-            .. Ammonia::default()
-        };
-    }
-    let cleaned = String::from(TAGS.clean(&a_buf));
-    let matches: &[_] = &['\n', '\t', '\r'];
-    cleaned.replace(matches, "").to_string()
-}
-
-fn strip_html_tags_slice(binary_content: &[u8]) -> String {
-    let a_buf = String::from_utf8_lossy(binary_content);
-    lazy_static! {
-        static ref TAGS2: Ammonia<'static> = Ammonia {
-            tags: HashSet::new(), /* list of tags that may stay in content - strip all */
-            .. Ammonia::default()
-        };
-    }
-    let cleaned = String::from(TAGS2.clean(&a_buf));
-    let matches: &[_] = &['\n', '\t', '\r'];
-    cleaned.replace(matches, "").to_string()
-}
-
-
-#[test]
-fn strip_html_tags_slice_test() {
-    let a = "some skdnfdsfk<html><meta></meta><body></body></html> js\n\n\n\n\n\n\nn\\t\t\t\t\t\t\t\t\t\t\t aaaa bbbb cccc";
-    let b = a.as_bytes();
-    assert!(strip_html_tags_slice(b) == String::from("some skdnfdsfk jsn\\t aaaa bbbb cccc"), format!("Found {}", strip_html_tags_slice(b)))
-}
 
 
 fn process_file(abs_path: &str, f: &File) -> Result<FileEntry, String> {
@@ -251,7 +121,7 @@ fn process_file(abs_path: &str, f: &File) -> Result<FileEntry, String> {
 }
 
 
-fn handle_file(path: &Path) -> Option<DomainEntry> {
+fn process_domain(path: &Path) -> Option<DomainEntry> {
     let name = match path.to_str() {
         Some(a_path) => a_path,
         None => "",
@@ -372,11 +242,7 @@ fn handle_file(path: &Path) -> Option<DomainEntry> {
 }
 
 
-fn fetch_users() -> Vec<User> {
-    let mut users: Vec<User> = unsafe { AllUsers::new() }.collect();
-    users.sort_by(|a, b| a.name().cmp(&b.name()));
-    users
-}
+
 
 
 fn main() {
@@ -407,7 +273,7 @@ fn main() {
             let entry_name = format!("path: {}", entry.path().to_str().unwrap_or("NO-FILE"));
             flame::start(entry_name.clone());
 
-            match handle_file(entry.path()) {
+            match process_domain(entry.path()) {
                 Some(entry_ok) => {
                     let output_file = format!("{}_{}.json", entry_ok.file.owner.name, entry_ok.name);
                     match OpenOptions::new()
