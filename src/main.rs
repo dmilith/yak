@@ -287,49 +287,46 @@ fn main() {
             flame::start(entry_name.clone());
 
             match process_domain(entry.path()) {
-                Some(entry_ok) => {
-                    let output_file = format!("{}_{}.json", entry_ok.file.owner.name, entry_ok.name);
-                    match OpenOptions::new()
-                                        .read(true)
-                                        .create(true)
-                                        .write(true)
-                                        .append(true)
-                                        .open(output_file.clone()) {
-                        Ok(f) => {
-                            let store_json = format!("json-file-dump: {}", output_file);
-                            flame::start(store_json.clone());
-                            let mut writer = BufWriter::new(f);
-                            let entr = entry_ok.to_string();
-                            match writer.write(entr.as_bytes()) {
-                                Ok(some) => {
-                                    debug!("DomainEntry: {} has been stored in: {} ({} bytes)", entry_ok, output_file, some)
-                                },
-                                Err(err) => {
-                                    error!("Error: {}, file: {}", err, output_file)
-                                }
-                            }
-                            flame::end(store_json);
-                        },
-                        Err(err) => {
-                            error!("File open error: {}, file: {}", err, output_file)
-                        }
-                    }
-
+                Some(domain_entry) => {
                     /* write flamegraph */
                     flame::end(entry_name.clone());
-                    let graph_file_name = format!("{}-{}.svg", user.name(), entry_ok.name);
+                    let graph_file_name = format!("{}-{}.svg", user.name(), domain_entry.name);
                     match flame::dump_svg(&mut File::create(graph_file_name).unwrap()) {
                         Ok(_) => debug!("Graph stored successfully"),
                         Err(err) => warn!("Failed to store graph: {}", err),
                     }
                     flame::clear();
 
-                    changeset.entries.push(entry_ok);
+                    changeset.entries.push(domain_entry);
                     files_processed += 1;
                 },
                 None => {
                     files_skipped += 1;
                 },
+            }
+        }
+
+        /* write changeset serialized to json */
+        let output_file = format!("{}_{}.chgset.json", user.name(), changeset.uuid);
+        match OpenOptions::new()
+                            .read(true)
+                            .create(true)
+                            .write(true)
+                            .append(false)
+                            .open(output_file.clone()) {
+            Ok(f) => {
+                let mut writer = BufWriter::new(f);
+                match writer.write(changeset.to_string().as_bytes()) {
+                    Ok(some) => {
+                        debug!("Changeset: {} has been stored in: {} ({} bytes)", changeset.uuid, output_file, some)
+                    },
+                    Err(err) => {
+                        error!("Error: {}, file: {}", err, output_file)
+                    }
+                }
+            },
+            Err(err) => {
+                error!("File open error: {}, file: {}", err, output_file)
             }
         }
 
