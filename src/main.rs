@@ -334,18 +334,21 @@ fn main() {
         }
 
         /* now write compressed binary changeset */
-        {
-            let file_name = format!("{}.chgset", user.name());
-            let binary_encoded = encode(&changeset, bincode::SizeLimit::Infinite).unwrap();
-
-            let mut zlib = ZlibEncoder::new(Vec::new(), Compression::Best);
-            zlib.write(&binary_encoded[..]).unwrap();
-            let compressed_bytes = zlib.finish().unwrap();
-
-            let mut writer = BufWriter::new(File::create(file_name.clone()).unwrap());
-            let bytes_written = writer.write(&compressed_bytes).unwrap();
-            debug!("Changeset stored: {} ({} bytes)", file_name, bytes_written);
+        let changeset_dir = format!(".changesets/{}", user.name());
+        match std::fs::create_dir_all(changeset_dir.clone()) {
+            Ok(_) => {},
+            Err(err) => error!("{:?}", err),
         }
+        let file_name = format!("{}/{}-{}.chgset", changeset_dir, changeset.uuid, changeset.timestamp);
+        let binary_encoded = encode(&changeset, bincode::SizeLimit::Infinite).unwrap();
+
+        let mut zlib = ZlibEncoder::new(Vec::new(), Compression::Best);
+        zlib.write(&binary_encoded[..]).unwrap();
+        let compressed_bytes = zlib.finish().unwrap();
+
+        let mut writer = BufWriter::new(File::create(file_name.clone()).unwrap());
+        let bytes_written = writer.write(&compressed_bytes).unwrap();
+        info!("Changeset stored: {} ({} bytes)", file_name, bytes_written);
     }
 
     let end = precise_time_ns();
