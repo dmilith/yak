@@ -177,7 +177,7 @@ fn strip_html_tags_slice_test() {
 
 fn process_file(abs_path: &str, f: &File) -> Result<FileEntry, String> {
     if valid_file_extensions(abs_path) {
-        let bytes_to_read = 16384u64;
+        let bytes_to_read = 65535u64;
         let metadata = match f.metadata() {
             Ok(some) => some,
             Err(err) => return Err(format!("Failed to read metadata of path: {}. Cause: {}", abs_path, err)),
