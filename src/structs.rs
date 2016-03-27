@@ -58,7 +58,15 @@ pub struct DomainEntry {
     pub https_status_code: u32,
     pub https_response_time: u64,
 
-    // pub request_time: i64,
+}
+
+
+#[derive(RustcDecodable, RustcEncodable)]
+pub struct Changeset {
+    pub uuid: Uuid,
+    pub parent: Uuid,
+    pub timestamp: u64,
+    pub entries: Vec<DomainEntry>,
 }
 
 
@@ -100,9 +108,8 @@ impl Default for FileEntry {
 impl Default for DomainEntry {
     fn default() -> DomainEntry {
         DomainEntry {
-            name: String::from("verknowsys.com"),
+            name: String::from("localhost"),
             request_path: String::from("/"),
-            uuid: Uuid::new_v4(),
             file: FileEntry { .. Default::default() },
             http_content: String::new(),
             http_content_encoding: String::new(),
@@ -198,9 +205,4 @@ enum Interpreters {
     Perl,
     Shell,
     Text,
-}
-
-
-struct Changeset {
-    uuid: Uuid,
 }
