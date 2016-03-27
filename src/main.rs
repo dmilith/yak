@@ -251,9 +251,6 @@ fn process_domain(path: &Path) -> Option<DomainEntry> {
 }
 
 
-
-
-
 fn main() {
     env_logger::init().unwrap();
 
@@ -267,6 +264,13 @@ fn main() {
             debug!("Path doesn't exists: {}. Skipping", path);
             continue
         }
+
+        let mut changeset = Changeset {
+            uuid: Uuid::new_v4(),
+            parent: root_uuid(), // XXX - should be attached to "root branch"
+            timestamp: time::precise_time_ns() / 1000 / 1000,
+            entries: Vec::new(),
+        };
 
         info!("Traversing path: '{}'", path);
         let walker = WalkDir::new(path)
@@ -320,12 +324,27 @@ fn main() {
                     }
                     flame::clear();
 
+                    changeset.entries.push(entry_ok);
                     files_processed += 1;
                 },
                 None => {
                     files_skipped += 1;
                 },
             }
+        }
+
+        /* now write compressed binary changeset */
+        {
+            let file_name = format!("{}.chgset", user.name());
+            let binary_encoded = encode(&changeset, bincode::SizeLimit::Infinite).unwrap();
+
+            let mut zlib = ZlibEncoder::new(Vec::new(), Compression::Best);
+            zlib.write(&binary_encoded[..]).unwrap();
+            let compressed_bytes = zlib.finish().unwrap();
+
+            let mut writer = BufWriter::new(File::create(file_name.clone()).unwrap());
+            let bytes_written = writer.write(&compressed_bytes).unwrap();
+            debug!("Changeset stored: {} ({} bytes)", file_name, bytes_written);
         }
     }
 
