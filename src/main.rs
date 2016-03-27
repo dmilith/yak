@@ -145,7 +145,6 @@ fn process_domain(path: &Path) -> Option<DomainEntry> {
                             file: file_entry.clone(),
                             request_path: format!("{}", request_path),
                             name: String::from(domain),
-                            uuid: Uuid::new_v4(),
                             .. Default::default()
                         };
 

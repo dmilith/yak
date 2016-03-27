@@ -44,7 +44,6 @@ pub struct FileEntry {
 pub struct DomainEntry {
     pub name: String,
     pub request_path: String,
-    pub uuid: Uuid,
     pub file: FileEntry,
 
     pub http_content: String,
