@@ -105,6 +105,16 @@ impl Default for FileEntry {
 }
 
 
+impl Display for Changeset {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match json::encode(&self) {
+            Ok(result) => write!(f, "{}", result),
+            Err(err) => write!(f, "Failure serializing JSON for Changeset! Cause: {}", err)
+        }
+    }
+}
+
+
 impl Default for DomainEntry {
     fn default() -> DomainEntry {
         DomainEntry {
