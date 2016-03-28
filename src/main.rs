@@ -17,13 +17,12 @@ extern crate curl;
 extern crate rand;
 extern crate ammonia;
 extern crate sha1;
-extern crate flame;
 extern crate term;
 extern crate difference;
 extern crate flate2;
 extern crate bincode;
 extern crate rustc_serialize;
-
+// extern crate flame;
 // extern crate rsgenetic;
 // #[macro_use] extern crate nickel;
 // use nickel::Nickel;
@@ -90,19 +89,19 @@ fn main() {
                         .filter_map(|e| e.ok())
                         .filter(|e| e.metadata().unwrap().is_file() && e.path().to_str().unwrap_or("").contains("domains")) {
 
-            let entry_name = format!("path: {}", entry.path().to_str().unwrap_or("NO-FILE"));
-            flame::start(entry_name.clone());
+            // let entry_name = format!("path: {}", entry.path().to_str().unwrap_or("NO-FILE"));
+            // flame::start(entry_name.clone());
 
             match process_domain(entry.path()) {
                 Some(domain_entry) => {
                     /* write flamegraph */
-                    flame::end(entry_name.clone());
-                    let graph_file_name = format!("{}-{}.svg", user.name(), domain_entry.name);
-                    match flame::dump_svg(&mut File::create(graph_file_name).unwrap()) {
-                        Ok(_) => debug!("Graph stored successfully"),
-                        Err(err) => warn!("Failed to store graph: {}", err),
-                    }
-                    flame::clear();
+                    // flame::end(entry_name.clone());
+                    // let graph_file_name = format!("{}-{}.svg", user.name(), domain_entry.name);
+                    // match flame::dump_svg(&mut File::create(graph_file_name).unwrap()) {
+                    //     Ok(_) => debug!("Graph stored successfully"),
+                    //     Err(err) => warn!("Failed to store graph: {}", err),
+                    // }
+                    // flame::clear();
 
                     changeset.entries.push(domain_entry);
                     files_processed += 1;
