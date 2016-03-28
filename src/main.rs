@@ -33,7 +33,6 @@ use uuid::Uuid;
 use time::precise_time_ns;
 use walkdir::WalkDir;
 use std::path::Path;
-use rayon::*;
 
 // local
 mod structs;
@@ -46,20 +45,20 @@ use structs::*;
 use base::*;
 use process::*;
 use rayon::prelude::*;
-use std::rc::Rc;
-use std::cell::Cell;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 
 fn main() {
     env_logger::init().unwrap();
 
     let start = precise_time_ns();
-    let files_processed: Rc<Cell<usize>> = Rc::new(Cell::new(0));
-    let files_skipped: Rc<Cell<usize>> = Rc::new(Cell::new(0));
+    let files_processed: Arc<AtomicUsize> = Arc::new(AtomicUsize::new(0));
+    let files_skipped: Arc<AtomicUsize> = Arc::new(AtomicUsize::new(0));
 
-    let _ = rayon::Configuration::new().set_num_threads(4);
+    // let _ = rayon::Configuration::new().set_num_threads(4);
 
-    fetch_users().par_iter().map(
+    fetch_users().par_iter_mut().for_each(
         |user| {
             let path = format!("/home/{}/", user.name());
             if Path::new(path.as_str()).exists() {
@@ -96,10 +95,13 @@ fn main() {
                             // flame::clear();
 
                             changeset.entries.push(domain_entry);
-                            files_processed.set(files_processed.get() + 1);
+
+                            let value = files_processed.load(Ordering::SeqCst);
+                            files_processed.store(value + 1, Ordering::SeqCst);
                         },
                         None => {
-                            files_skipped.set(files_skipped.get() + 1);
+                            let value = files_skipped.load(Ordering::SeqCst);
+                            files_skipped.store(value + 1, Ordering::SeqCst);
                         },
                     }
                 }
@@ -116,7 +118,7 @@ fn main() {
     );
 
     let end = precise_time_ns();
-    info!("Traverse for: {} files, (skipped: {} files), elapsed: {} miliseconds", files_processed.get(), files_skipped.get(), (end - start) / 1000 / 1000);
+    info!("Traverse for: {} files, (skipped: {} files), elapsed: {} miliseconds", files_processed.load(Ordering::SeqCst), files_skipped.load(Ordering::SeqCst), (end - start) / 1000 / 1000);
 
     // let mut server = Nickel::new();
     // server.utilize(router! {
