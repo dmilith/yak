@@ -40,7 +40,7 @@ pub struct FileEntry {
 }
 
 
-#[derive(RustcDecodable, RustcEncodable)]
+#[derive(RustcDecodable, RustcEncodable, Clone)]
 pub struct DomainEntry {
     pub name: String,
     pub request_path: String,
@@ -61,7 +61,7 @@ pub struct DomainEntry {
 }
 
 
-#[derive(RustcDecodable, RustcEncodable)]
+#[derive(RustcDecodable, RustcEncodable, Clone)]
 pub struct Changeset {
     pub uuid: Uuid,
     pub parent: Uuid,
