@@ -1,6 +1,6 @@
 [package]
 name = "yak"
-version = "0.2.3"
+version = "0.2.4"
 authors = ["Daniel (dmilith) Dettlaff <dmilith@me.com>"]
 
 
