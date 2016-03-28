@@ -22,6 +22,7 @@ extern crate difference;
 extern crate flate2;
 extern crate bincode;
 extern crate rustc_serialize;
+extern crate rayon;
 // extern crate flame;
 // extern crate rsgenetic;
 
@@ -32,6 +33,7 @@ use uuid::Uuid;
 use time::precise_time_ns;
 use walkdir::WalkDir;
 use std::path::Path;
+use rayon::*;
 
 // local
 mod structs;
@@ -43,74 +45,78 @@ use utils::*;
 use structs::*;
 use base::*;
 use process::*;
+use rayon::prelude::*;
+use std::rc::Rc;
+use std::cell::Cell;
 
 
 fn main() {
     env_logger::init().unwrap();
 
     let start = precise_time_ns();
-    let mut files_processed = 0;
-    let mut files_skipped = 0;
+    let files_processed: Rc<Cell<usize>> = Rc::new(Cell::new(0));
+    let files_skipped: Rc<Cell<usize>> = Rc::new(Cell::new(0));
 
-    for user in fetch_users() {
-        let path = format!("/home/{}/", user.name());
-        if ! Path::new(path.as_str()).exists() {
-            debug!("Path doesn't exists: {}. Skipping", path);
-            continue
-        }
+    let _ = rayon::Configuration::new().set_num_threads(4);
 
-        let mut changeset = Changeset {
-            uuid: Uuid::new_v4(),
-            parent: root_uuid(), // XXX - should be attached to "root branch"
-            timestamp: time::precise_time_ns() / 1000 / 1000,
-            entries: Vec::new(),
-        };
+    fetch_users().par_iter().map(
+        |user| {
+            let path = format!("/home/{}/", user.name());
+            if Path::new(path.as_str()).exists() {
+                let mut changeset = Changeset {
+                    uuid: Uuid::new_v4(),
+                    parent: root_uuid(), // XXX - should be attached to "root branch"
+                    timestamp: time::precise_time_ns() / 1000 / 1000,
+                    entries: Vec::new(),
+                };
 
-        info!("Traversing path: '{}'", path);
-        let walker = WalkDir::new(path)
-            .follow_links(false)
-            .max_depth(4)
-            .max_open(512)
-            .into_iter();
+                info!("Traversing path: '{}'", path);
+                let walker = WalkDir::new(path)
+                    .follow_links(false)
+                    .max_depth(4)
+                    .max_open(512)
+                    .into_iter();
 
-        for entry in walker /* filter everything we don't have access to */
-                        .filter_map(|e| e.ok())
-                        .filter(|e| e.metadata().unwrap().is_file() && e.path().to_str().unwrap_or("").contains("domains")) {
+                for entry in walker /* filter everything we don't have access to */
+                                .filter_map(|e| e.ok())
+                                .filter(|e| e.metadata().unwrap().is_file() && e.path().to_str().unwrap_or("").contains("domains")) {
 
-            // let entry_name = format!("path: {}", entry.path().to_str().unwrap_or("NO-FILE"));
-            // flame::start(entry_name.clone());
+                    // let entry_name = format!("path: {}", entry.path().to_str().unwrap_or("NO-FILE"));
+                    // flame::start(entry_name.clone());
 
-            match process_domain(entry.path()) {
-                Some(domain_entry) => {
-                    /* write flamegraph */
-                    // flame::end(entry_name.clone());
-                    // let graph_file_name = format!("{}-{}.svg", user.name(), domain_entry.name);
-                    // match flame::dump_svg(&mut File::create(graph_file_name).unwrap()) {
-                    //     Ok(_) => debug!("Graph stored successfully"),
-                    //     Err(err) => warn!("Failed to store graph: {}", err),
-                    // }
-                    // flame::clear();
+                    match process_domain(entry.path()) {
+                        Some(domain_entry) => {
+                            /* write flamegraph */
+                            // flame::end(entry_name.clone());
+                            // let graph_file_name = format!("{}-{}.svg", user.name(), domain_entry.name);
+                            // match flame::dump_svg(&mut File::create(graph_file_name).unwrap()) {
+                            //     Ok(_) => debug!("Graph stored successfully"),
+                            //     Err(err) => warn!("Failed to store graph: {}", err),
+                            // }
+                            // flame::clear();
 
-                    changeset.entries.push(domain_entry);
-                    files_processed += 1;
-                },
-                None => {
-                    files_skipped += 1;
-                },
+                            changeset.entries.push(domain_entry);
+                            files_processed.set(files_processed.get() + 1);
+                        },
+                        None => {
+                            files_skipped.set(files_skipped.get() + 1);
+                        },
+                    }
+                }
+
+                /* write changeset serialized to json */
+                let (file_name, bytes_written) = store_changeset_json(user.name().to_string(), changeset.clone());
+                info!("Changeset(json) stored: {} ({} bytes)", file_name, bytes_written);
+
+                /* now write compressed binary changeset */
+                let (file_name, bytes_written) = store_changeset(user.name().to_string(), changeset);
+                info!("Changeset stored: {} ({} bytes)", file_name, bytes_written);
             }
         }
-
-        /* write changeset serialized to json */
-        let (file_name, bytes_written) = store_changeset_json(user.name().to_string(), changeset.clone());
-        info!("Changeset(json) stored: {} ({} bytes)", file_name, bytes_written);
-
-        /* now write compressed binary changeset */
-        let (file_name, bytes_written) = store_changeset(user.name().to_string(), changeset);
-        info!("Changeset stored: {} ({} bytes)", file_name, bytes_written);
-    }
+    );
 
     let end = precise_time_ns();
-    info!("Traverse for: {} files, (skipped: {} files), elapsed: {} miliseconds", files_processed, files_skipped, (end - start) / 1000 / 1000);
+    info!("Traverse for: {} files, (skipped: {} files), elapsed: {} miliseconds", files_processed.get(), files_skipped.get(), (end - start) / 1000 / 1000);
 
     // let mut server = Nickel::new();
     // server.utilize(router! {
