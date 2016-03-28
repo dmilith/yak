@@ -17,7 +17,7 @@ pub fn valid_file_extensions(name: &str) -> bool {
         */
         static ref RE: Regex = Regex::new(r"\.(php[0-9]*|[s]?htm[l0-9]*|txt|inc|py|pl|rb|sh|[xyua]ml|htaccess|rss|[s]?css|js|mo|po|ini|ps|l?a?tex|svg)$").unwrap();
     }
-    RE.is_match(name)
+    RE.is_match(name) || !name.contains(".")
 }
 
 
