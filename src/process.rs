@@ -1,17 +1,72 @@
+extern crate env_logger;
+
 use utils::*;
 use structs::*;
-use base::*;
 
 use regex::Regex;
 use std::path::Path;
 use time::{get_time, precise_time_ns};
 use std::io::{BufReader, BufWriter};
-use std::fs::{File, OpenOptions};
+use std::fs::{create_dir_all, File, OpenOptions};
+use std::io::prelude::{Read,Write};
+
+use curl::http;
 use users::get_user_by_uid;
 use std::os::unix::fs::MetadataExt; /* Metadata trait */
 use cld2::{detect_language, Format, Reliable, Lang};
+use bincode::SizeLimit;
+use bincode::rustc_serialize::{encode}; //, decode};
 use rustc_serialize::json;
-use curl::http;
+use flate2::Compression;
+use flate2::write::ZlibEncoder;
+
+
+pub fn store_changeset_json(user_name: String, changeset: Changeset) -> (String, usize) {
+    let output_file = format!("{}_{}.chgset.json", user_name, changeset.uuid);
+    match OpenOptions::new()
+                        .read(true)
+                        .create(true)
+                        .write(true)
+                        .append(false)
+                        .open(output_file.clone()) {
+        Ok(f) => {
+            let mut writer = BufWriter::new(f);
+            match writer.write(changeset.to_string().as_bytes()) {
+                Ok(bytes) => {
+                    debug!("Changeset: {} has been stored in: {} ({} bytes)", changeset.uuid, output_file, bytes);
+                    (output_file, bytes)
+                },
+                Err(err) => {
+                    error!("Error: {}, file: {}", err, output_file);
+                    (output_file, 0)
+                }
+            }
+        },
+        Err(err) => {
+            error!("File open error: {}, file: {}", err, output_file);
+            (output_file, 0)
+        }
+    }
+}
+
+
+pub fn store_changeset(user_name: String, changeset: Changeset) -> (String, usize) {
+    let changeset_dir = format!(".changesets/{}", user_name);
+    match create_dir_all(changeset_dir.clone()) {
+        Ok(_) => {},
+        Err(err) => error!("{:?}", err),
+    }
+    let file_name = format!("{}/{}-{}.chgset", changeset_dir, changeset.uuid, changeset.timestamp);
+    let binary_encoded = encode(&changeset, SizeLimit::Infinite).unwrap();
+
+    let mut zlib = ZlibEncoder::new(Vec::new(), Compression::Best);
+    zlib.write(&binary_encoded[..]).unwrap();
+    let compressed_bytes = zlib.finish().unwrap();
+
+    let mut writer = BufWriter::new(File::create(file_name.clone()).unwrap());
+    let bytes_written = writer.write(&compressed_bytes).unwrap();
+    (file_name.to_string(), bytes_written)
+}
 
 
 pub fn process_file(abs_path: &str, f: &File) -> Result<FileEntry, String> {
