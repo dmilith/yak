@@ -26,12 +26,13 @@ pub fn valid_file_extensions(name: &str) -> bool {
 fn valid_file_extensions_test() {
     for valid in vec!(
         "somestrange123.file.php", ".htm", "a.txt", "file.html", "file.htm4",
-        "exym.pl", "404.shtml", "album.rss", "a.ps", "a.latex", "mr.tex"
+        "exym.pl", "404.shtml", "album.rss", "a.ps", "a.latex", "mr.tex",
+        "somefile", "SOMENOEXTFILE", "A", "a.php.txt.svg.xml.html.pl"
     ) {
-        assert!(valid_file_extensions(valid));
+        assert!(valid_file_extensions(valid), valid);
     }
-    for invalid in vec!("file.plo", "file.pyc", ".phpa", "somefile", "file.pshtml") {
-        assert!(!valid_file_extensions(invalid));
+    for invalid in vec!("file.plo", "file.pm", ".phpa", "file.pshtml", "f.pyc") {
+        assert!(!valid_file_extensions(invalid), invalid);
     }
 }
 
