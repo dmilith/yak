@@ -100,7 +100,17 @@ pub fn all_changesets(user_name: String) -> Vec<Changeset> {
             Ok(file) => {
                 let reader = BufReader::new(file);
                 let mut decoder = ZlibDecoder::new(reader);
-                let changeset: Changeset = decode_from(&mut decoder, SizeLimit::Infinite).unwrap_or(Changeset { .. Default::default() });
+                let changeset: Changeset = match decode_from(&mut decoder, SizeLimit::Infinite) {
+                    Ok(r) => r,
+                    Err(err) => {
+                        let e = entry.path().to_str().unwrap();
+                        error!("Data error: {}, while processing changeset: {}", err, e);
+                        Changeset {
+                            parent: root_invalid_uuid(),
+                            .. Default::default()
+                        }
+                    },
+                };
                 changesets.push(changeset.clone());
                 debug!("Decoder ready, Reader ready, decoded Changeset: {}", changeset)
             },
