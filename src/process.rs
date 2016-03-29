@@ -96,6 +96,7 @@ pub fn all_changesets(user_name: String) -> Vec<Changeset> {
         let changeset: Changeset = decode_from(&mut decoder, SizeLimit::Infinite).unwrap();
         changesets.push(changeset);
     }
+    changesets.sort_by(|a, b| a.timestamp.cmp(&b.timestamp)); /* sort changesets by timestamp */
     changesets
 }
 
