@@ -6,6 +6,8 @@ use std::fmt;
 use std::fmt::Display;
 use rustc_serialize::{Encodable, json};
 
+use base::*;
+use time::*;
 
 
 #[derive(RustcDecodable, RustcEncodable, Debug, Clone)]
@@ -67,6 +69,18 @@ pub struct Changeset {
     pub parent: Uuid,
     pub timestamp: u64,
     pub entries: Vec<DomainEntry>,
+}
+
+
+impl Default for Changeset {
+    fn default() -> Changeset {
+        Changeset {
+            uuid: Uuid::new_v4(),
+            parent: root_uuid(),
+            timestamp: precise_time_ns() / 1000 / 1000,
+            entries: Vec::new(),
+        }
+    }
 }
 
 
