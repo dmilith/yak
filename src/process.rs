@@ -100,7 +100,7 @@ fn store_restore_changesets_test() {
 
     let root = Path::new("/tmp");
     if env::set_current_dir(&root).is_ok() {
-        remove_dir_all(Path::new(".changesets"));
+        remove_dir_all(Path::new(".changesets")).unwrap();
         store_changeset(String::from("admin6"), origin_changeset.clone());
         store_changeset(String::from("admin6"), changeset);
         let all = all_changesets(String::from("admin6"));
@@ -113,12 +113,25 @@ fn store_restore_changesets_test() {
     if specials.exists() {
         info!("Detected special specials dir! Yummy!");
         if env::set_current_dir(&specials).is_ok() {
-            for user in vec!("abszn", "admin", "adminfail", "akukat") {
-                let all = all_changesets(String::from(user));
-                assert!(all.len() > 3);
-                let most_recent = mostrecent_changeset(String::from(user));
-                assert!(most_recent.timestamp > 10000000, "Timestamp is too small?");
-                assert!(most_recent.parent == root_uuid() || most_recent.parent == root_invalid_uuid());
+            let walker = WalkDir::new(specials)
+                .follow_links(false)
+                .min_depth(2)
+                .max_depth(2)
+                .into_iter();
+
+            for entry in walker
+                .filter_map(|e| e.ok()) {
+
+                let user = entry.path().to_str().unwrap().split("/").last().unwrap_or("");
+                if user.len() > 0 {
+                    debug!("Processing user: {}", user);
+                    let all = all_changesets(String::from(user));
+                    assert!(all.len() > 0, format!("Changeset dir empty for user: {}?", user));
+                    let most_recent = mostrecent_changeset(String::from(user));
+                    assert!(most_recent.timestamp > 10000000, "Timestamp is too small?");
+                    assert!(most_recent.parent == root_uuid() || most_recent.parent == root_invalid_uuid());
+                    debug!("Finished processing user: {}", user);
+                }
             }
         }
     }
