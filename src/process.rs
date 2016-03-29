@@ -1,13 +1,16 @@
 extern crate env_logger;
 
+use base::*;
 use utils::*;
 use structs::*;
 
+use std::env;
+use uuid::Uuid;
 use regex::Regex;
 use std::path::Path;
 use time::{get_time, precise_time_ns};
 use std::io::{BufReader, BufWriter};
-use std::fs::{create_dir_all, File, OpenOptions};
+use std::fs::{remove_dir_all, create_dir_all, File, OpenOptions};
 use std::io::prelude::{Read,Write};
 
 use curl::http;
@@ -54,6 +57,69 @@ pub fn store_changeset_json(user_name: String, changeset: Changeset) -> (String,
         Err(err) => {
             error!("File open error: {}, file: {}", err, output_file);
             (output_file, 0)
+        }
+    }
+}
+
+
+#[test]
+fn store_restore_changesets_test() {
+    let origin_changeset = Changeset {
+        uuid: Uuid::new_v4(),
+        parent: root_uuid(), // XXX - should be attached to "root branch"
+        timestamp: precise_time_ns() / 1000 / 1000,
+        entries: vec!(
+            DomainEntry {
+                file: FileEntry {
+                    path: String::from("/tmp/index.php"),
+                    .. Default::default()
+                },
+                request_path: String::from("/index.php"),
+                name: String::from("index.php"),
+                .. Default::default()
+            },
+            DomainEntry {
+                file: FileEntry {
+                    path: String::from("/tmp/main.php"),
+                    owner: Owner {
+                        name: String::from("admin6"),
+                        .. Default::default()
+                    },
+                    .. Default::default()
+                },
+                http_content: String::from("łąóĻóćźżĻóŃß€į§†®ļ©©ńąń∆"),
+                request_path: String::from("/main.php"),
+                name: String::from("index.php"),
+                .. Default::default()
+            },
+        ),
+    };
+    let mut changeset = origin_changeset.clone();
+    changeset.uuid = Uuid::new_v4();
+    changeset.timestamp += 1111;
+
+    let root = Path::new("/tmp");
+    if env::set_current_dir(&root).is_ok() {
+        remove_dir_all(Path::new(".changesets"));
+        store_changeset(String::from("admin6"), origin_changeset.clone());
+        store_changeset(String::from("admin6"), changeset);
+        let all = all_changesets(String::from("admin6"));
+        assert!(all.len() == 2);
+        let tsmp = mostrecent_changeset(String::from("admin6")).timestamp;
+        assert!(tsmp == origin_changeset.timestamp + 1111, "Most recent timestamp isn't most recent?");
+    }
+    /* NOTE: you can put .changesets/ from any serve to /tmp/specials/S1 to process more "real life" examples */
+    let specials = Path::new("/tmp/specials/S1");
+    if specials.exists() {
+        info!("Detected special specials dir! Yummy!");
+        if env::set_current_dir(&specials).is_ok() {
+            for user in vec!("abszn", "admin", "adminfail", "akukat") {
+                let all = all_changesets(String::from(user));
+                assert!(all.len() > 3);
+                let most_recent = mostrecent_changeset(String::from(user));
+                assert!(most_recent.timestamp > 10000000, "Timestamp is too small?");
+                assert!(most_recent.parent == root_uuid() || most_recent.parent == root_invalid_uuid());
+            }
         }
     }
 }
