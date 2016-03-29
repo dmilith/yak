@@ -120,7 +120,7 @@ fn main() {
     let end = precise_time_ns();
     info!("Traverse for: {} files, (skipped: {} files), elapsed: {} miliseconds", files_processed.load(Ordering::SeqCst), files_skipped.load(Ordering::SeqCst), (end - start) / 1000 / 1000);
 
-    info!("All changesets:\n{}",
+    info!("All 'admin' changesets:\n{}",
           all_changesets("admin".to_string())
             .into_iter()
             .map(|e| e.to_string() + "\n----\n")
