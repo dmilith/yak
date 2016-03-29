@@ -106,9 +106,9 @@ fn main() {
                     }
                 }
 
-                /* write changeset serialized to json */
-                let (file_name, bytes_written) = store_changeset_json(user.name().to_string(), changeset.clone());
-                info!("Changeset(json) stored: {} ({} bytes)", file_name, bytes_written);
+                // /* write changeset serialized to json */
+                // let (file_name, bytes_written) = store_changeset_json(user.name().to_string(), changeset.clone());
+                // info!("Changeset(json) stored: {} ({} bytes)", file_name, bytes_written);
 
                 /* now write compressed binary changeset */
                 let (file_name, bytes_written) = store_changeset(user.name().to_string(), changeset);
