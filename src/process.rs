@@ -89,7 +89,7 @@ pub fn all_changesets(user_name: String) -> Vec<Changeset> {
 
     for entry in walker
         .filter_map(|e| e.ok())
-        .filter(|e| e.metadata().unwrap().is_file() && e.path().to_str().unwrap_or("").ends_with(".chgset")) {
+        .filter(|e| e.path().to_str().unwrap_or("").ends_with(".chgset")) {
 
         match File::open(entry.path()) {
             Ok(file) => {
