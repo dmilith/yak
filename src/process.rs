@@ -14,11 +14,15 @@ use curl::http;
 use users::get_user_by_uid;
 use std::os::unix::fs::MetadataExt; /* Metadata trait */
 use cld2::{detect_language, Format, Reliable, Lang};
-use bincode::SizeLimit;
-use bincode::rustc_serialize::{encode}; //, decode};
-use rustc_serialize::json;
-use flate2::Compression;
+use walkdir::WalkDir;
+
 use flate2::write::ZlibEncoder;
+use flate2::read::ZlibDecoder;
+use flate2::Compression;
+
+use rustc_serialize::json;
+use bincode::SizeLimit;
+use bincode::rustc_serialize::{encode, decode_from};
 
 
 pub fn store_changeset_json(user_name: String, changeset: Changeset) -> (String, usize) {
@@ -66,6 +70,33 @@ pub fn store_changeset(user_name: String, changeset: Changeset) -> (String, usiz
     let mut writer = BufWriter::new(File::create(file_name.clone()).unwrap());
     let bytes_written = writer.write(&compressed_bytes).unwrap();
     (file_name.to_string(), bytes_written)
+}
+
+
+pub fn all_changesets(user_name: String) -> Vec<Changeset> {
+    let changeset_dir = format!(".changesets/{}", user_name);
+    match create_dir_all(changeset_dir.clone()) {
+        Ok(_) => {},
+        Err(err) => error!("{:?}", err),
+    }
+    let mut changesets = vec!();
+    info!("Reading changesets from dir: {}", changeset_dir);
+    let walker = WalkDir::new(changeset_dir)
+        .follow_links(false)
+        .max_depth(2)
+        .max_open(128)
+        .into_iter();
+
+    for entry in walker
+        .filter_map(|e| e.ok())
+        .filter(|e| e.metadata().unwrap().is_file() && e.path().to_str().unwrap_or("").ends_with(".chgset")) {
+
+        let reader = BufReader::new(File::open(entry.path()).unwrap());
+        let mut decoder = ZlibDecoder::new(reader);
+        let changeset: Changeset = decode_from(&mut decoder, SizeLimit::Infinite).unwrap();
+        changesets.push(changeset);
+    }
+    changesets
 }
 
 
