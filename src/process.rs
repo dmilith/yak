@@ -95,7 +95,7 @@ pub fn all_changesets(user_name: String) -> Vec<Changeset> {
             Ok(file) => {
                 let reader = BufReader::new(file);
                 let mut decoder = ZlibDecoder::new(reader);
-                let changeset: Changeset = decode_from(&mut decoder, SizeLimit::Infinite).unwrap();
+                let changeset: Changeset = decode_from(&mut decoder, SizeLimit::Infinite).unwrap_or(Changeset { .. Default::default() });
                 changesets.push(changeset.clone());
                 debug!("Decoder ready, Reader ready, decoded Changeset: {}", changeset)
             },
