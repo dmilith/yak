@@ -101,6 +101,11 @@ pub fn all_changesets(user_name: String) -> Vec<Changeset> {
 }
 
 
+pub fn mostrecent_changeset(user_name: String) -> Changeset {
+    all_changesets(user_name).pop().unwrap()
+}
+
+
 pub fn process_file(abs_path: &str, f: &File) -> Result<FileEntry, String> {
     if valid_file_extensions(abs_path) {
         let bytes_to_read = 65535u64;

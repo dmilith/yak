@@ -126,6 +126,7 @@ fn main() {
             .map(|e| e.to_string() + "\n----\n")
             .collect::<String>());
 
+    info!("Most recent changeset: {}", mostrecent_changeset("admin".to_string()));
     // let mut server = Nickel::new();
     // server.utilize(router! {
     //     get "**" => |_req, _res| {
