@@ -91,10 +91,18 @@ pub fn all_changesets(user_name: String) -> Vec<Changeset> {
         .filter_map(|e| e.ok())
         .filter(|e| e.metadata().unwrap().is_file() && e.path().to_str().unwrap_or("").ends_with(".chgset")) {
 
-        let reader = BufReader::new(File::open(entry.path()).unwrap());
-        let mut decoder = ZlibDecoder::new(reader);
-        let changeset: Changeset = decode_from(&mut decoder, SizeLimit::Infinite).unwrap();
-        changesets.push(changeset);
+        match File::open(entry.path()) {
+            Ok(file) => {
+                let reader = BufReader::new(file);
+                let mut decoder = ZlibDecoder::new(reader);
+                let changeset: Changeset = decode_from(&mut decoder, SizeLimit::Infinite).unwrap();
+                changesets.push(changeset.clone());
+                debug!("Decoder ready, Reader ready, decoded Changeset: {}", changeset)
+            },
+            Err(err) => {
+                error!("Failed to open file: {}. Error: {}", entry.path().to_str().unwrap_or("NO-FILE"), err);
+            },
+        }
     }
     changesets.sort_by(|a, b| a.timestamp.cmp(&b.timestamp)); /* sort changesets by timestamp */
     changesets
