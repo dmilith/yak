@@ -34,7 +34,7 @@ pub fn store_changeset_json(user_name: String, changeset: Changeset) -> (String,
         Ok(_) => {},
         Err(err) => error!("{:?}", err),
     }
-    let output_file = format!("{}/{}-{}.chgset", changeset_dir, changeset.uuid, changeset.timestamp);
+    let output_file = format!("{}/{}-{}.chgset.json", changeset_dir, changeset.uuid, changeset.timestamp);
     match OpenOptions::new()
                         .read(true)
                         .create(true)
