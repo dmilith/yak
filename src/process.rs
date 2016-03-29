@@ -26,7 +26,12 @@ use bincode::rustc_serialize::{encode, decode_from};
 
 
 pub fn store_changeset_json(user_name: String, changeset: Changeset) -> (String, usize) {
-    let output_file = format!("{}_{}.chgset.json", user_name, changeset.uuid);
+    let changeset_dir = format!(".changesets/{}", user_name);
+    match create_dir_all(changeset_dir.clone()) {
+        Ok(_) => {},
+        Err(err) => error!("{:?}", err),
+    }
+    let output_file = format!("{}/{}-{}.chgset", changeset_dir, changeset.uuid, changeset.timestamp);
     match OpenOptions::new()
                         .read(true)
                         .create(true)
