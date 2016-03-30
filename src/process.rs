@@ -1,31 +1,31 @@
 extern crate env_logger;
 
-use base::*;
-use utils::*;
-use structs::*;
+pub use base::*;
+pub use utils::*;
+pub use structs::*;
 
-use std::env;
-use uuid::Uuid;
-use regex::Regex;
-use std::path::Path;
-use time::{get_time, precise_time_ns};
-use std::io::{BufReader, BufWriter};
-use std::fs::{remove_dir_all, create_dir_all, File, OpenOptions};
-use std::io::prelude::{Read,Write};
+pub use std::env;
+pub use uuid::Uuid;
+pub use regex::Regex;
+pub use std::path::Path;
+pub use time::{get_time, precise_time_ns};
+pub use std::io::{BufReader, BufWriter};
+pub use std::fs::{remove_dir_all, create_dir_all, File, OpenOptions};
+pub use std::io::prelude::{Read,Write};
 
-use curl::http;
-use users::get_user_by_uid;
-use std::os::unix::fs::MetadataExt; /* Metadata trait */
-use cld2::{detect_language, Format, Reliable, Lang};
-use walkdir::WalkDir;
+pub use curl::http;
+pub use users::get_user_by_uid;
+pub use std::os::unix::fs::MetadataExt; /* Metadata trait */
+pub use cld2::{detect_language, Format, Reliable, Lang};
+pub use walkdir::WalkDir;
 
-use flate2::write::ZlibEncoder;
-use flate2::read::ZlibDecoder;
-use flate2::Compression;
+pub use flate2::write::ZlibEncoder;
+pub use flate2::read::ZlibDecoder;
+pub use flate2::Compression;
 
-use rustc_serialize::json;
-use bincode::SizeLimit;
-use bincode::rustc_serialize::{encode, decode_from};
+pub use rustc_serialize::json;
+pub use bincode::SizeLimit;
+pub use bincode::rustc_serialize::{encode, decode_from};
 
 
 pub fn store_changeset_json(user_name: String, changeset: Changeset) -> (String, usize) {
@@ -57,117 +57,6 @@ pub fn store_changeset_json(user_name: String, changeset: Changeset) -> (String,
         Err(err) => {
             error!("File open error: {}, file: {}", err, output_file);
             (output_file, 0)
-        }
-    }
-}
-
-
-#[cfg(test)]
-#[test]
-fn store_restore_changesets_json_test() {
-    /* NOTE: you can put .changesets/ from any serve to /tmp/specials/S1 to process more "real life" examples */
-    let specials = Path::new("/tmp/specials/S1");
-    if specials.exists() {
-        info!("Detected special specials dir! Yummy!");
-        if env::set_current_dir(&specials).is_ok() {
-            let walker = WalkDir::new(specials)
-                .follow_links(false)
-                .min_depth(2)
-                .max_depth(2)
-                .into_iter();
-
-            for entry in walker
-                .filter_map(|e| e.ok()) {
-
-                let user = entry.path().to_str().unwrap().split("/").last().unwrap_or("");
-                if user.len() > 0 {
-                    debug!("Processing JSON user: {}", user);
-                    let all = all_changesets_json(String::from(user));
-                    assert!(all.len() > 0, format!("Changeset dir empty for user: {}?", user));
-                    let most_recent = mostrecent_changeset_json(String::from(user));
-                    assert!(most_recent.timestamp > 10000000, "Timestamp is too small?");
-                    assert!(most_recent.parent == root_uuid() || most_recent.parent == root_invalid_uuid());
-                    debug!("Finished processing user: {}", user);
-                }
-            }
-        }
-    }
-}
-
-#[cfg(test)]
-#[test]
-fn store_restore_changesets_test() {
-    let origin_changeset = Changeset {
-        uuid: Uuid::new_v4(),
-        parent: root_uuid(), // XXX - should be attached to "root branch"
-        timestamp: precise_time_ns() / 1000 / 1000,
-        entries: vec!(
-            DomainEntry {
-                file: FileEntry {
-                    path: String::from("/tmp/index.php"),
-                    local_content: "<?php echo INDEX phpinfo();".to_string().into_bytes(),
-                    .. Default::default()
-                },
-                request_path: String::from("/index.php"),
-                name: String::from("index.php"),
-                .. Default::default()
-            },
-            DomainEntry {
-                file: FileEntry {
-                    path: String::from("/tmp/main.php"),
-                    local_content: "<?php echo MAIN phpinfo();".to_string().into_bytes(),
-                    owner: Owner {
-                        name: String::from("admin6"),
-                        .. Default::default()
-                    },
-                    .. Default::default()
-                },
-                http_content: String::from("<?php echo MAIN phpinfo();"),
-                request_path: String::from("/main.php"),
-                name: String::from("main.php"),
-                .. Default::default()
-            },
-        ),
-    };
-    let mut changeset = origin_changeset.clone();
-    changeset.uuid = Uuid::new_v4();
-    changeset.timestamp += 1111;
-
-    let root = Path::new("/tmp");
-    if env::set_current_dir(&root).is_ok() {
-        remove_dir_all(Path::new(".changesets")).unwrap_or(());
-        store_changeset(String::from("admin6"), origin_changeset.clone());
-        store_changeset(String::from("admin6"), changeset);
-        let all = all_changesets(String::from("admin6"));
-        assert!(all.len() == 2);
-        let tsmp = mostrecent_changeset(String::from("admin6")).timestamp;
-        assert!(tsmp == origin_changeset.timestamp + 1111, "Most recent timestamp isn't most recent?");
-    }
-    /* NOTE: you can put .changesets/ from any serve to /tmp/specials/S1 to process more "real life" examples */
-    let specials = Path::new("/tmp/specials/S1");
-    if specials.exists() {
-        info!("Detected special specials dir! Yummy!");
-        if env::set_current_dir(&specials).is_ok() {
-            let walker = WalkDir::new(specials)
-                .follow_links(false)
-                .min_depth(2)
-                .max_depth(2)
-                .into_iter();
-
-            for entry in walker
-                .filter_map(|e| e.ok()) {
-
-                let user = entry.path().to_str().unwrap_or("").split("/").last().unwrap_or("");
-                if user.len() > 0 {
-                    debug!("Processing user: {}", user);
-                    let all = all_changesets(String::from(user));
-                    assert!(all.len() > 0, format!("Changeset dir empty for user: {}?", user));
-                    let most_recent = mostrecent_changeset_json(String::from(user));
-                    assert!(most_recent.timestamp > 10000000, "Timestamp is too small?");
-                    assert!(most_recent.parent == root_uuid() || most_recent.parent == root_invalid_uuid());
-                    debug!("Finished processing user: {}", user);
-                }
-            }
         }
     }
 }
@@ -487,52 +376,168 @@ pub fn process_domain(path: &Path) -> Option<DomainEntry> {
 
 
 #[cfg(test)]
-#[test]
-fn language_detection_test() {
-    let _ = env_logger::init();
-    let texts = vec!("Młody Amadeusz szedł suchą szosą.", "Mladý Amadeusz išiel suchej ceste.", "Young Amadeus went a dry road.");
-    let expected = vec!("pl", "sk", "en");
-    for (text, res) in texts.iter().zip(expected.iter()) {
-        match detect_language(text, Format::Text).0 { /* ignore detection reliability here */
-            Some(Lang(lang)) => assert!(lang.to_string() == res.to_string()),
-            _ => assert!(1 == 0, "Language not recognized properly!"),
+mod tests {
+    extern crate env_logger;
+    use super::*;
+
+
+    #[test]
+    fn store_restore_changesets_json_test() {
+        /* NOTE: you can put .changesets/ from any serve to /tmp/specials/S1 to process more "real life" examples */
+        let specials = Path::new("/tmp/specials/S1");
+        if specials.exists() {
+            info!("Detected special specials dir! Yummy!");
+            if env::set_current_dir(&specials).is_ok() {
+                let walker = WalkDir::new(specials)
+                    .follow_links(false)
+                    .min_depth(2)
+                    .max_depth(2)
+                    .into_iter();
+
+                for entry in walker
+                    .filter_map(|e| e.ok()) {
+
+                    let user = entry.path().to_str().unwrap().split("/").last().unwrap_or("");
+                    if user.len() > 0 {
+                        debug!("Processing JSON user: {}", user);
+                        let all = all_changesets_json(String::from(user));
+                        assert!(all.len() > 0, format!("Changeset dir empty for user: {}?", user));
+                        let most_recent = mostrecent_changeset_json(String::from(user));
+                        assert!(most_recent.timestamp > 10000000, "Timestamp is too small?");
+                        assert!(most_recent.parent == root_uuid() || most_recent.parent == root_invalid_uuid());
+                        debug!("Finished processing user: {}", user);
+                    }
+                }
+            }
         }
     }
-}
 
 
-#[cfg(test)]
-#[test]
-fn regex_group_domain_extractor_test() {
-    let _ = env_logger::init();
-    let domain_correct = vec!(
-        "/home/user/domains/domain.tld.my.pl/public_html/file.php",
-        "/home/user2/domains/domena.pl/public_html/index.html",
-    );
-    let correct_results = vec!(
-        "domain.tld.my.pl",
-        "domena.pl"
-    );
-    for (file, res) in domain_correct.iter().zip(correct_results.iter()) {
-        let entry = FileEntry {
-            owner: Owner {
-                origin: String::new(), /* XXX */
-                name: String::from("root"),
-                account_type: AccountType::Admin,
+    #[test]
+    fn language_detection_test() {
+        let _ = env_logger::init();
+        let texts = vec!("Młody Amadeusz szedł suchą szosą.", "Mladý Amadeusz išiel suchej ceste.", "Young Amadeus went a dry road.");
+        let expected = vec!("pl", "sk", "en");
+        for (text, res) in texts.iter().zip(expected.iter()) {
+            match detect_language(text, Format::Text).0 { /* ignore detection reliability here */
+                Some(Lang(lang)) => assert!(lang.to_string() == res.to_string()),
+                _ => assert!(1 == 0, "Language not recognized properly!"),
+            }
+        }
+    }
+
+
+    #[test]
+    fn regex_group_domain_extractor_test() {
+        let _ = env_logger::init();
+        let domain_correct = vec!(
+            "/home/user/domains/domain.tld.my.pl/public_html/file.php",
+            "/home/user2/domains/domena.pl/public_html/index.html",
+        );
+        let correct_results = vec!(
+            "domain.tld.my.pl",
+            "domena.pl"
+        );
+        for (file, res) in domain_correct.iter().zip(correct_results.iter()) {
+            let entry = FileEntry {
+                owner: Owner {
+                    origin: String::new(), /* XXX */
+                    name: String::from("root"),
+                    account_type: AccountType::Admin,
+                    .. Default::default()
+                },
+                path: file.to_string(),
+                size: 123,
+                mode: 0711 as u32,
+                modified: 1,
+                encoding: "UTF-8".to_string(),
                 .. Default::default()
-            },
-            path: file.to_string(),
-            size: 123,
-            mode: 0711 as u32,
-            modified: 1,
-            encoding: "UTF-8".to_string(),
-            .. Default::default()
-        };
+            };
 
-        let domain_from_path = Regex::new(r".*/domains/(.*)/public_html/.*").unwrap();
-        for _domain in domain_from_path.captures_iter(entry.path.as_str()) {
-            debug!("Domain: {:?}", _domain.at(1).unwrap());
-            assert!(_domain.at(1).unwrap() == res.to_string());
+            let domain_from_path = Regex::new(r".*/domains/(.*)/public_html/.*").unwrap();
+            for _domain in domain_from_path.captures_iter(entry.path.as_str()) {
+                debug!("Domain: {:?}", _domain.at(1).unwrap());
+                assert!(_domain.at(1).unwrap() == res.to_string());
+            }
         }
     }
+
+
+    #[test]
+    fn store_restore_changesets_test() {
+        let origin_changeset = Changeset {
+            uuid: Uuid::new_v4(),
+            parent: root_uuid(), // XXX - should be attached to "root branch"
+            timestamp: precise_time_ns() / 1000 / 1000,
+            entries: vec!(
+                DomainEntry {
+                    file: FileEntry {
+                        path: String::from("/tmp/index.php"),
+                        local_content: "<?php echo INDEX phpinfo();".to_string().into_bytes(),
+                        .. Default::default()
+                    },
+                    request_path: String::from("/index.php"),
+                    name: String::from("index.php"),
+                    .. Default::default()
+                },
+                DomainEntry {
+                    file: FileEntry {
+                        path: String::from("/tmp/main.php"),
+                        local_content: "<?php echo MAIN phpinfo();".to_string().into_bytes(),
+                        owner: Owner {
+                            name: String::from("admin6"),
+                            .. Default::default()
+                        },
+                        .. Default::default()
+                    },
+                    http_content: String::from("<?php echo MAIN phpinfo();"),
+                    request_path: String::from("/main.php"),
+                    name: String::from("main.php"),
+                    .. Default::default()
+                },
+            ),
+        };
+        let mut changeset = origin_changeset.clone();
+        changeset.uuid = Uuid::new_v4();
+        changeset.timestamp += 1111;
+
+        let root = Path::new("/tmp");
+        if env::set_current_dir(&root).is_ok() {
+            remove_dir_all(Path::new(".changesets")).unwrap_or(());
+            store_changeset(String::from("admin6"), origin_changeset.clone());
+            store_changeset(String::from("admin6"), changeset);
+            let all = all_changesets(String::from("admin6"));
+            assert!(all.len() == 2);
+            let tsmp = mostrecent_changeset(String::from("admin6")).timestamp;
+            assert!(tsmp == origin_changeset.timestamp + 1111, "Most recent timestamp isn't most recent?");
+        }
+        /* NOTE: you can put .changesets/ from any serve to /tmp/specials/S1 to process more "real life" examples */
+        let specials = Path::new("/tmp/specials/S1");
+        if specials.exists() {
+            info!("Detected special specials dir! Yummy!");
+            if env::set_current_dir(&specials).is_ok() {
+                let walker = WalkDir::new(specials)
+                    .follow_links(false)
+                    .min_depth(2)
+                    .max_depth(2)
+                    .into_iter();
+
+                for entry in walker
+                    .filter_map(|e| e.ok()) {
+
+                    let user = entry.path().to_str().unwrap_or("").split("/").last().unwrap_or("");
+                    if user.len() > 0 {
+                        debug!("Processing user: {}", user);
+                        let all = all_changesets(String::from(user));
+                        assert!(all.len() > 0, format!("Changeset dir empty for user: {}?", user));
+                        let most_recent = mostrecent_changeset_json(String::from(user));
+                        assert!(most_recent.timestamp > 10000000, "Timestamp is too small?");
+                        assert!(most_recent.parent == root_uuid() || most_recent.parent == root_invalid_uuid());
+                        debug!("Finished processing user: {}", user);
+                    }
+                }
+            }
+        }
+    }
+
 }

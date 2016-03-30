@@ -29,21 +29,14 @@ extern crate rayon;
 // #[macro_use] extern crate nickel;
 // use nickel::Nickel;
 
-use uuid::Uuid;
-use time::precise_time_ns;
-use walkdir::WalkDir;
-use std::path::Path;
-
 // local
 mod structs;
 mod utils;
 mod base;
 mod process;
 
-use utils::*;
-use structs::*;
-use base::*;
 use process::*;
+
 use rayon::prelude::*;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
