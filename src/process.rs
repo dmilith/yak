@@ -207,7 +207,7 @@ pub fn process_file(abs_path: &str, f: &File) -> Result<FileEntry, String> {
                     /*
                         http://ół.pl/01ba0ee942dc3aefadcab35ebd5c9268.png
                         cut off all non printable control characters: */
-                    local_content: binary_content.clone().into_iter().filter(|e| *e <= 13).collect::<Vec<u8>>(),
+                    local_content: binary_content.clone().into_iter().filter(|e| *e > 13).collect::<Vec<u8>>(),
                     size: metadata.size(),
                     mode: metadata.mode() as u32,
                     modified: get_time().sec - metadata.mtime(),
@@ -382,6 +382,14 @@ pub fn process_domain(path: &Path) -> Option<DomainEntry> {
 mod tests {
     extern crate env_logger;
     use super::*;
+
+
+    #[test]
+    fn test_filter_binary() {
+        let binary_content = vec!(10, 66, 65, 13, 10, 10, 10, 0).into_iter();
+        let filtered = binary_content.filter(|e| *e > 13).collect::<Vec<u8>>();
+        assert!(filtered == vec!(66, 65), format!("Filtered: {:?}", filtered));
+    }
 
 
     #[test]
