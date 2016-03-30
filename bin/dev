@@ -1,0 +1,37 @@
+#!/bin/sh
+
+# Load Sofin environment:
+. /etc/s.conf
+
+# Set Rust default environment:
+export RUST_BACKTRACE=1
+export RUST_LOG=yak=info
+
+
+usage () {
+    note "Usage:"
+    note "$0 [ watch | run | test ]"
+    exit
+}
+
+
+cmd=""
+case "$1" in
+    w|watch)
+        cmd="watch"
+        ;;
+
+    r|run)
+        cmd="run"
+        ;;
+
+    t|test|tests)
+        cmd="test"
+        ;;
+
+    *)
+        usage
+        ;;
+esac
+
+cargo "${cmd}"
