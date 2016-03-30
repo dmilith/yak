@@ -140,11 +140,10 @@ fn main() {
             .flat_map(|f| f.file.local_content )
             .collect();
 
-        let matches: &[_] = &['\n', '\t', '\r'];
         print_difference(
             calculate_difference(
-                String::from_utf8(a_local_content).unwrap().replace(matches, ""),
-                String::from_utf8(b_local_content).unwrap().replace(matches, ""),
+                String::from_utf8(a_local_content).unwrap(),
+                String::from_utf8(b_local_content).unwrap(),
                 ""));
     }
 
