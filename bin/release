@@ -7,6 +7,7 @@ project_dir="$(pwd 2>/dev/null)"
 PN="Yak"
 
 note "Cleaning ${PN}"
+s rm Yak
 cargo clean
 
 note "Building ${PN}"
