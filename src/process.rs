@@ -204,7 +204,7 @@ pub fn process_file(abs_path: &str, f: &File) -> Result<FileEntry, String> {
                 let mut entry = FileEntry {
                     owner: an_owner,
                     path: abs_path.to_string(),
-                    local_content: binary_content.clone(),
+                    local_content: binary_content.clone().into_iter().filter(|e| *e == 10).collect::<Vec<u8>>(),
                     size: metadata.size(),
                     mode: metadata.mode() as u32,
                     modified: get_time().sec - metadata.mtime(),
