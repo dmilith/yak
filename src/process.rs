@@ -215,11 +215,8 @@ pub fn all_changesets(user_name: String) -> Vec<Changeset> {
                     Ok(r) => r,
                     Err(err) => {
                         let e = entry.path().to_str().unwrap();
-                        error!("Data error: {}, while processing changeset: {}", err, e);
-                        Changeset {
-                            parent: root_invalid_uuid(),
-                            .. Default::default()
-                        }
+                        warn!("Data processing failure: {}, while processing changeset: {}", err, e);
+                        invalid_changeset()
                     },
                 };
                 changesets.push(changeset.clone());
