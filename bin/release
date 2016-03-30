@@ -1,0 +1,45 @@
+#!/bin/sh
+
+. /etc/s.conf
+
+project_dir="$(pwd 2>/dev/null)"
+
+PN="Yak"
+
+# note "Cleaning ${PN}"
+# cargo clean
+
+# note "Building ${PN}"
+# . bin/build
+
+# note "Installing required bundles for ${PN}"
+# s i Curl Libressl Rust
+
+note "Compiling bundle for ${PN}"
+ts_yak="yak-$(date +%s)"
+mkdir -p /Software/${PN}/bin /Software/${PN}/lib
+cp -v target/release/yak /Software/${PN}/bin/${ts_yak}
+
+cd /Software/Curl/lib/
+for libr in libcurl.so libcurl.so.4 libcurl.so.4.4.0 libidn.so libidn.so.11 libidn.so.11.6.15; do
+    cp -v ./${libr} /Software/${PN}/lib/
+done
+cd /Software/Libressl/lib/
+for libr in libcrypto.so libcrypto.so.37 libcrypto.so.37.0.0 libssl.so libssl.so.38 libssl.so.38.0.0; do
+    cp -v ./${libr} /Software/${PN}/lib/
+done
+cd /Software/Rust/lib/
+rust_postfix="$(ls libstd*.so | sed -e 's/.*-//')"
+cp -v ./*-${rust_postfix} /Software/${PN}/lib/
+rm -fv /Software/${PN}/lib/librustc_llvm-${rust_postfix}
+
+printf "#!/bin/sh\n\nLD_LIBRARY_PATH=/Software/${PN}/lib/ RUST_BACKTRACE=1 RUST_LOG=yak=debug /Software/${PN}/bin/${ts_yak} 2>>/var/log/yak-\$(date +%%F).log\n" > /Software/${PN}/bin/yak
+chmod 755 /Software/${PN}/bin/yak
+
+cd ${project_dir}
+version="$(cat ./Cargo.toml 2>/dev/null | egrep '^version' 2>/dev/null | sed -e 's/.* "//;s/"$//' 2>/dev/null)"
+test -z "${version}" && error "Empty version"
+note "Completing bundle version: ${version} for ${PN}"
+printf "${version}" > /Software/${PN}/yak.installed
+s export yak ${PN}
+s push ${PN}
