@@ -130,14 +130,14 @@ fn main() {
         let a_local_content: Vec<u8> = a.clone()
             .entries
             .into_iter()
-            .flat_map(|f| f.file.local_content.into_iter().filter(|e| *e == 10) )
+            .flat_map(|f| f.file.local_content )
             .collect();
 
         let b = chsets.next().unwrap().clone();
         let b_local_content: Vec<u8> = b
             .entries
             .into_iter()
-            .flat_map(|f| f.file.local_content.into_iter().filter(|e| *e == 10) )
+            .flat_map(|f| f.file.local_content )
             .collect();
 
         let matches: &[_] = &['\n', '\t', '\r'];
