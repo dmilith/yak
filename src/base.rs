@@ -1,4 +1,5 @@
 use uuid::Uuid;
+use structs::*;
 
 
 pub fn root_uuid() -> Uuid {
@@ -8,4 +9,12 @@ pub fn root_uuid() -> Uuid {
 
 pub fn root_invalid_uuid() -> Uuid {
     /* root */ Uuid::parse_str("deadbeef-ff55-4913-94fa-000000000000").unwrap()
+}
+
+
+pub fn invalid_changeset() -> Changeset {
+    Changeset{
+        parent: root_invalid_uuid(),
+        .. Default::default()
+    }
 }
