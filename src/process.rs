@@ -132,7 +132,7 @@ fn store_restore_changesets_test() {
 
     let root = Path::new("/tmp");
     if env::set_current_dir(&root).is_ok() {
-        remove_dir_all(Path::new(".changesets")).unwrap();
+        remove_dir_all(Path::new(".changesets")).unwrap_or(());
         store_changeset(String::from("admin6"), origin_changeset.clone());
         store_changeset(String::from("admin6"), changeset);
         let all = all_changesets(String::from("admin6"));
