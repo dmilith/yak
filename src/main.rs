@@ -120,13 +120,23 @@ fn main() {
     let end = precise_time_ns();
     info!("Traverse for: {} files, (skipped: {} files), elapsed: {} miliseconds", files_processed.load(Ordering::SeqCst), files_skipped.load(Ordering::SeqCst), (end - start) / 1000 / 1000);
 
-    info!("All 'admin' changesets:\n{}",
-          all_changesets("admin".to_string())
+    let username = "admin".to_string();
+    info!("All '{}' changesets:\n{}",
+        username.clone(),
+        all_changesets("admin".to_string())
             .into_iter()
             .map(|e| e.to_string() + "\n----\n")
             .collect::<String>());
 
-    info!("Most recent changeset: {}", mostrecent_changeset("admin".to_string()));
+    info!("Most recent changeset: {}", mostrecent_changeset(username.clone()));
+
+    if all_changesets(username.clone()).len() >= 2 {
+        let mut chsets = all_changesets(username).into_iter();
+        let a = chsets.next().unwrap().to_string();
+        let b = chsets.next().unwrap().to_string();
+        print_difference(calculate_difference(a, b, ""));
+    }
+
     // let mut server = Nickel::new();
     // server.utilize(router! {
     //     get "**" => |_req, _res| {
