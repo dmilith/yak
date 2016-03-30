@@ -83,7 +83,7 @@ fn store_restore_changesets_json_test() {
                     debug!("Processing JSON user: {}", user);
                     let all = all_changesets_json(String::from(user));
                     assert!(all.len() > 0, format!("Changeset dir empty for user: {}?", user));
-                    let most_recent = mostrecent_changeset(String::from(user));
+                    let most_recent = mostrecent_changeset_json(String::from(user));
                     assert!(most_recent.timestamp > 10000000, "Timestamp is too small?");
                     assert!(most_recent.parent == root_uuid() || most_recent.parent == root_invalid_uuid());
                     debug!("Finished processing user: {}", user);
