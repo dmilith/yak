@@ -62,6 +62,7 @@ pub fn store_changeset_json(user_name: String, changeset: Changeset) -> (String,
 }
 
 
+#[cfg(test)]
 #[test]
 fn store_restore_changesets_json_test() {
     /* NOTE: you can put .changesets/ from any serve to /tmp/specials/S1 to process more "real life" examples */
@@ -104,6 +105,7 @@ fn store_restore_changesets_test() {
             DomainEntry {
                 file: FileEntry {
                     path: String::from("/tmp/index.php"),
+                    local_content: "<?php echo INDEX phpinfo();".to_string().into_bytes(),
                     .. Default::default()
                 },
                 request_path: String::from("/index.php"),
@@ -113,15 +115,16 @@ fn store_restore_changesets_test() {
             DomainEntry {
                 file: FileEntry {
                     path: String::from("/tmp/main.php"),
+                    local_content: "<?php echo MAIN phpinfo();".to_string().into_bytes(),
                     owner: Owner {
                         name: String::from("admin6"),
                         .. Default::default()
                     },
                     .. Default::default()
                 },
-                http_content: String::from("łąóĻóćźżĻóŃß€į§†®ļ©©ńąń∆"),
+                http_content: String::from("<?php echo MAIN phpinfo();"),
                 request_path: String::from("/main.php"),
-                name: String::from("index.php"),
+                name: String::from("main.php"),
                 .. Default::default()
             },
         ),
