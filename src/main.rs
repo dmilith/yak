@@ -130,6 +130,7 @@ fn main() {
         let a_local_content: Vec<u8> = a.clone()
             .entries
             .into_iter()
+            .filter(|f| f.file.path.ends_with(".php") )
             .flat_map(|f| f.file.local_content )
             .collect();
 
@@ -137,6 +138,7 @@ fn main() {
         let b_local_content: Vec<u8> = b
             .entries
             .into_iter()
+            .filter(|f| f.file.path.ends_with(".php") )
             .flat_map(|f| f.file.local_content )
             .collect();
 
