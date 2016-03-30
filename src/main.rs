@@ -127,23 +127,24 @@ fn main() {
         let mut chsets = all_changesets(username).into_iter();
 
         let a = chsets.next().unwrap().clone();
-        let a_local_content: Vec<u8> = a
+        let a_local_content: Vec<u8> = a.clone()
             .entries
             .into_iter()
-            .flat_map(|f| f.file.local_content )
+            .flat_map(|f| f.file.local_content.into_iter().filter(|e| *e == 10) )
             .collect();
 
         let b = chsets.next().unwrap().clone();
         let b_local_content: Vec<u8> = b
             .entries
             .into_iter()
-            .flat_map(|f| f.file.local_content )
+            .flat_map(|f| f.file.local_content.into_iter().filter(|e| *e == 10) )
             .collect();
 
+        let matches: &[_] = &['\n', '\t', '\r'];
         print_difference(
             calculate_difference(
-                String::from_utf8(a_local_content).unwrap(),
-                String::from_utf8(b_local_content).unwrap(),
+                String::from_utf8(a_local_content).unwrap().replace(matches, ""),
+                String::from_utf8(b_local_content).unwrap().replace(matches, ""),
                 ""));
     }
 
