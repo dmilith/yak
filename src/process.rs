@@ -93,7 +93,7 @@ fn store_restore_changesets_json_test() {
     }
 }
 
-
+#[cfg(test)]
 #[test]
 fn store_restore_changesets_test() {
     let origin_changeset = Changeset {
