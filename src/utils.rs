@@ -162,13 +162,13 @@ pub fn print_difference(changes: Vec<Difference>) {
         match c {
             &Difference::Same(ref z) => {
                 t.fg(term::color::RED).unwrap();
-                write!(t, "{}", z);
+                let _ = write!(t, "{}", z);
             },
 
             &Difference::Rem(ref z) => {
                 t.fg(term::color::WHITE).unwrap();
                 t.bg(term::color::RED).unwrap();
-                write!(t, "{}", z);
+                let _ = write!(t, "{}", z);
                 t.reset().unwrap();
             },
 
@@ -176,19 +176,19 @@ pub fn print_difference(changes: Vec<Difference>) {
         }
     }
     t.reset().unwrap();
-    writeln!(t, "");
+    let _ = writeln!(t, "");
 
     for c in changes.iter() {
         match c {
             &Difference::Same(ref z) => {
                 t.fg(term::color::GREEN).unwrap();
-                write!(t, "{}", z);
+                let _ = write!(t, "{}", z);
             },
 
             &Difference::Add(ref z) => {
                 t.fg(term::color::BLACK).unwrap();
                 t.bg(term::color::GREEN).unwrap();
-                write!(t, "{}", z);
+                let _ = write!(t, "{}", z);
                 t.reset().unwrap();
             },
 
@@ -196,6 +196,6 @@ pub fn print_difference(changes: Vec<Difference>) {
         }
     }
     t.reset().unwrap();
-    writeln!(t, "");
+    let _ = writeln!(t, "");
     t.flush().unwrap();
 }
