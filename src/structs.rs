@@ -33,6 +33,7 @@ pub struct Owner {
 pub struct FileEntry {
     pub path: String,
     pub sha1: String,
+    pub local_content: Vec<u8>,
     pub lang: String,
     pub encoding: String,
     pub owner: Owner,
@@ -102,6 +103,7 @@ impl Default for FileEntry {
         FileEntry {
             path: String::new(),
             sha1: String::new(),
+            local_content: vec!(),
             lang: String::new(),
             encoding: String::new(),
             size: 0,
