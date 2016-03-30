@@ -154,7 +154,7 @@ fn store_restore_changesets_test() {
             for entry in walker
                 .filter_map(|e| e.ok()) {
 
-                let user = entry.path().to_str().unwrap().split("/").last().unwrap_or("");
+                let user = entry.path().to_str().unwrap_or("").split("/").last().unwrap_or("");
                 if user.len() > 0 {
                     debug!("Processing user: {}", user);
                     let all = all_changesets(String::from(user));
@@ -214,7 +214,7 @@ pub fn all_changesets(user_name: String) -> Vec<Changeset> {
                 let changeset: Changeset = match decode_from(&mut decoder, SizeLimit::Infinite) {
                     Ok(r) => r,
                     Err(err) => {
-                        let e = entry.path().to_str().unwrap();
+                        let e = entry.path().to_str().unwrap_or("NO-FILE");
                         warn!("Data processing failure: {}, while processing changeset: {}", err, e);
                         invalid_changeset()
                     },
