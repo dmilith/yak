@@ -6,6 +6,9 @@ use users::{User, AllUsers};
 use regex::Regex;
 use sha1;
 use encoding::types::*;
+use term;
+use difference::diff;
+use difference::Difference;
 use encoding::all::*;
 
 
@@ -144,4 +147,55 @@ pub fn read_fragment<R>(reader: R, bytes_to_read: u64) -> Option<Vec<u8>> where 
         _ =>
             None,
     }
+}
+
+
+pub fn calculate_difference(a: String, b: String, split: &str) -> Vec<Difference> {
+    let (_dist, changes) = diff(a.as_ref(), b.as_ref(), split);
+    changes
+}
+
+
+pub fn print_difference(changes: Vec<Difference>) {
+    let mut t = term::stdout().unwrap();
+    for c in changes.iter() {
+        match c {
+            &Difference::Same(ref z) => {
+                t.fg(term::color::RED).unwrap();
+                write!(t, "{}", z);
+            },
+
+            &Difference::Rem(ref z) => {
+                t.fg(term::color::WHITE).unwrap();
+                t.bg(term::color::RED).unwrap();
+                write!(t, "{}", z);
+                t.reset().unwrap();
+            },
+
+            _ => ()
+        }
+    }
+    t.reset().unwrap();
+    writeln!(t, "");
+
+    for c in changes.iter() {
+        match c {
+            &Difference::Same(ref z) => {
+                t.fg(term::color::GREEN).unwrap();
+                write!(t, "{}", z);
+            },
+
+            &Difference::Add(ref z) => {
+                t.fg(term::color::BLACK).unwrap();
+                t.bg(term::color::GREEN).unwrap();
+                write!(t, "{}", z);
+                t.reset().unwrap();
+            },
+
+            _ => ()
+        }
+    }
+    t.reset().unwrap();
+    writeln!(t, "");
+    t.flush().unwrap();
 }
