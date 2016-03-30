@@ -274,12 +274,18 @@ pub fn all_changesets_json(user_name: String) -> Vec<Changeset> {
 
 
 pub fn mostrecent_changeset(user_name: String) -> Changeset {
-    all_changesets(user_name).pop().unwrap()
+    match all_changesets(user_name).pop() {
+        Some(value) => value,
+        None => invalid_changeset(),
+    }
 }
 
 
 pub fn mostrecent_changeset_json(user_name: String) -> Changeset {
-    all_changesets_json(user_name).pop().unwrap()
+    match all_changesets_json(user_name).pop() {
+        Some(value) => value,
+        None => invalid_changeset(),
+    }
 }
 
 
