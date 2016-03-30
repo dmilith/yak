@@ -6,14 +6,14 @@ project_dir="$(pwd 2>/dev/null)"
 
 PN="Yak"
 
-# note "Cleaning ${PN}"
-# cargo clean
+note "Cleaning ${PN}"
+cargo clean
 
-# note "Building ${PN}"
-# . bin/build
+note "Building ${PN}"
+. bin/build
 
-# note "Installing required bundles for ${PN}"
-# s i Curl Libressl Rust
+note "Installing required bundles for ${PN}"
+s i Curl Libressl Rust
 
 note "Compiling bundle for ${PN}"
 ts_yak="yak-$(date +%s)"
