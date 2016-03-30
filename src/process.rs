@@ -63,6 +63,38 @@ pub fn store_changeset_json(user_name: String, changeset: Changeset) -> (String,
 
 
 #[test]
+fn store_restore_changesets_json_test() {
+    /* NOTE: you can put .changesets/ from any serve to /tmp/specials/S1 to process more "real life" examples */
+    let specials = Path::new("/tmp/specials/S1");
+    if specials.exists() {
+        info!("Detected special specials dir! Yummy!");
+        if env::set_current_dir(&specials).is_ok() {
+            let walker = WalkDir::new(specials)
+                .follow_links(false)
+                .min_depth(2)
+                .max_depth(2)
+                .into_iter();
+
+            for entry in walker
+                .filter_map(|e| e.ok()) {
+
+                let user = entry.path().to_str().unwrap().split("/").last().unwrap_or("");
+                if user.len() > 0 {
+                    debug!("Processing JSON user: {}", user);
+                    let all = all_changesets_json(String::from(user));
+                    assert!(all.len() > 0, format!("Changeset dir empty for user: {}?", user));
+                    let most_recent = mostrecent_changeset(String::from(user));
+                    assert!(most_recent.timestamp > 10000000, "Timestamp is too small?");
+                    assert!(most_recent.parent == root_uuid() || most_recent.parent == root_invalid_uuid());
+                    debug!("Finished processing user: {}", user);
+                }
+            }
+        }
+    }
+}
+
+
+#[test]
 fn store_restore_changesets_test() {
     let origin_changeset = Changeset {
         uuid: Uuid::new_v4(),
@@ -127,7 +159,7 @@ fn store_restore_changesets_test() {
                     debug!("Processing user: {}", user);
                     let all = all_changesets(String::from(user));
                     assert!(all.len() > 0, format!("Changeset dir empty for user: {}?", user));
-                    let most_recent = mostrecent_changeset(String::from(user));
+                    let most_recent = mostrecent_changeset_json(String::from(user));
                     assert!(most_recent.timestamp > 10000000, "Timestamp is too small?");
                     assert!(most_recent.parent == root_uuid() || most_recent.parent == root_invalid_uuid());
                     debug!("Finished processing user: {}", user);
@@ -168,7 +200,7 @@ pub fn all_changesets(user_name: String) -> Vec<Changeset> {
     let walker = WalkDir::new(changeset_dir)
         .follow_links(false)
         .max_depth(2)
-        .max_open(128)
+        .max_open(256)
         .into_iter();
 
     for entry in walker
@@ -191,7 +223,45 @@ pub fn all_changesets(user_name: String) -> Vec<Changeset> {
                     },
                 };
                 changesets.push(changeset.clone());
-                debug!("Decoder ready, Reader ready, decoded Changeset: {}", changeset)
+                debug!("Decoded Changeset: {}", changeset)
+            },
+            Err(err) => {
+                error!("Failed to open file: {}. Error: {}", entry.path().to_str().unwrap_or("NO-FILE"), err);
+            },
+        }
+    }
+    changesets.sort_by(|a, b| a.timestamp.cmp(&b.timestamp)); /* sort changesets by timestamp */
+    changesets
+}
+
+
+pub fn all_changesets_json(user_name: String) -> Vec<Changeset> {
+    let changeset_dir = format!(".changesets/{}", user_name);
+    match create_dir_all(changeset_dir.clone()) {
+        Ok(_) => {},
+        Err(err) => error!("{:?}", err),
+    }
+    let mut changesets = vec!();
+    info!("Reading changesets from dir: {}", changeset_dir);
+    let walker = WalkDir::new(changeset_dir)
+        .follow_links(false)
+        .max_depth(2)
+        .max_open(256)
+        .into_iter();
+
+    for entry in walker
+        .filter_map(|e| e.ok())
+        .filter(|e| e.path().to_str().unwrap_or("").ends_with(".chgset.json")) {
+
+        match File::open(entry.path()) {
+            Ok(file) => {
+                let mut reader = BufReader::new(file);
+                let mut buf = String::new();
+                let _ = reader.read_to_string(&mut buf);
+                let changeset: Changeset = json::decode(buf.as_str()).unwrap();
+                println!("{:?}", changeset.to_string());
+                changesets.push(changeset.clone());
+                debug!("Decoded Changeset: {}", changeset)
             },
             Err(err) => {
                 error!("Failed to open file: {}. Error: {}", entry.path().to_str().unwrap_or("NO-FILE"), err);
@@ -205,6 +275,11 @@ pub fn all_changesets(user_name: String) -> Vec<Changeset> {
 
 pub fn mostrecent_changeset(user_name: String) -> Changeset {
     all_changesets(user_name).pop().unwrap()
+}
+
+
+pub fn mostrecent_changeset_json(user_name: String) -> Changeset {
+    all_changesets_json(user_name).pop().unwrap()
 }
 
 
