@@ -132,9 +132,26 @@ fn main() {
 
     if all_changesets(username.clone()).len() >= 2 {
         let mut chsets = all_changesets(username).into_iter();
-        let a = chsets.next().unwrap().to_string();
-        let b = chsets.next().unwrap().to_string();
-        print_difference(calculate_difference(a, b, ""));
+
+        let a = chsets.next().unwrap().clone();
+        let a_local_content: Vec<u8> = a
+            .entries
+            .into_iter()
+            .flat_map(|f| f.file.local_content )
+            .collect();
+
+        let b = chsets.next().unwrap().clone();
+        let b_local_content: Vec<u8> = b
+            .entries
+            .into_iter()
+            .flat_map(|f| f.file.local_content )
+            .collect();
+
+        print_difference(
+            calculate_difference(
+                String::from_utf8(a_local_content).unwrap(),
+                String::from_utf8(b_local_content).unwrap(),
+                ""));
     }
 
     // let mut server = Nickel::new();
