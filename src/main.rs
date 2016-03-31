@@ -1,4 +1,7 @@
 #[macro_use]
+extern crate rustful;
+
+#[macro_use]
 extern crate lazy_static; // ensure that regular expressions are compiled exactly once
 
 #[macro_use]
@@ -26,16 +29,16 @@ extern crate rayon;
 // extern crate flame;
 // extern crate rsgenetic;
 
-// #[macro_use] extern crate nickel;
-// use nickel::Nickel;
 
 // local
 mod structs;
 mod utils;
 mod base;
 mod process;
+mod web_panel;
 
 use process::*;
+use web_panel::start;
 
 use rayon::prelude::*;
 use std::sync::Arc;
@@ -156,6 +159,7 @@ fn main() {
     //     }
     // });
     // server.listen("127.0.0.1:6000");
+    web_panel::start();
 }
 
 
