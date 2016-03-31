@@ -1,6 +1,6 @@
 [package]
 name = "yak"
-version = "0.3.2"
+version = "0.4.0"
 authors = ["Daniel (dmilith) Dettlaff <dmilith@me.com>"]
 
 
@@ -26,12 +26,5 @@ bincode = "0.5"
 term = "0.4"
 flate2 = { version = "0.2", features = ["zlib"], default-features = false }
 rayon = "0.3"
-# nickel = "*"
-
-
-# language detection:
-[dependencies.cld2]
-git = "git://github.com/emk/rust-cld2"
-
-[dev-dependencies]
-env_logger = "0.3"
+cld2 = "0.1"
+rustful = "0.8"
