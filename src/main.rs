@@ -116,7 +116,7 @@ fn main() {
     let username = "admin".to_string();
     info!("All '{}' changesets:\n{}",
         username.clone(),
-        all_changesets("admin".to_string())
+        all_changesets(username.clone())
             .into_iter()
             .map(|e| e.to_string() + "\n----\n")
             .collect::<String>());
