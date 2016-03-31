@@ -1,5 +1,3 @@
-extern crate env_logger;
-
 pub use base::*;
 pub use utils::*;
 pub use structs::*;
@@ -370,7 +368,6 @@ mod tests {
                     let mut buf = String::new();
                     let _ = reader.read_to_string(&mut buf);
                     let changeset: Changeset = json::decode(buf.as_str()).unwrap();
-                    println!("{:?}", changeset.to_string());
                     changesets.push(changeset.clone());
                     debug!("Decoded Changeset: {}", changeset)
                 },
