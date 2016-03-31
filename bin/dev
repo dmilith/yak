@@ -29,6 +29,14 @@ case "$1" in
         cmd="test"
         ;;
 
+    b|build)
+        cmd="build"
+        ;;
+
+    u|up|update)
+        cmd="update"
+        ;;
+
     *)
         usage
         ;;
