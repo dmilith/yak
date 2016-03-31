@@ -1,7 +1,21 @@
-extern crate env_logger;
-
 use std::error::Error;
 use rustful::{Server, Context, Response, TreeRouter};
+
+
+/*
+
+
+HTTP PARAMS API use cases:
+
+        http://localhost
+                        /chgset/:username                     - shows history of all user changes between changesets
+                        /chgset/:username/:uuid_ch1/:uuid_ch2 - shows difference between changeset uuid_ch1 and uuid_ch2
+                        /chgset/:username/:timestamp          - shows all user changesets changes with exactly same or
+                                                                bigger timestamp
+                        /chgset/history/:username             - retrospective mode. Renders full user changeset history
+
+
+ */
 
 
 fn say_hello(context: Context, response: Response) {
