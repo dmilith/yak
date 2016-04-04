@@ -49,6 +49,24 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 fn main() {
     env_logger::init().unwrap();
 
+    for arg in env::args() {
+        debug!("ARG: {}", arg);
+        match arg.as_ref() {
+            "api" | "www" | "web" | "server" | "s" => {
+                info!("Starting Http service on port: {}", root_default_http_port());
+                web_panel::start();
+            },
+
+            _ => {},
+        }
+    }
+
+    info!("Traversing home dirs..");
+    main_traverser()
+}
+
+
+fn main_traverser() {
     let start = precise_time_ns();
     let files_processed: Arc<AtomicUsize> = Arc::new(AtomicUsize::new(0));
     let files_skipped: Arc<AtomicUsize> = Arc::new(AtomicUsize::new(0));
