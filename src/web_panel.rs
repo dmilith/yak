@@ -72,7 +72,7 @@ fn chgset_diff_page(context: Context, response: Response) {
     debug!("Params for chgset_diff_page: hn: {}, un: {}, uuid1: {}, uuid2: {}", hostname, username, uuid1, uuid2);
 
     let mut chsets = all_changesets(username.clone()).into_iter()
-        .filter(|e| e.uuid == uuid1 || e.uuid == uuid2);
+        .filter(|e| e.uuid != uuid1 || e.uuid != uuid2);
 
     let a = match chsets.next() {
         Some(next_one) => next_one,
