@@ -26,6 +26,7 @@ extern crate flate2;
 extern crate bincode;
 extern crate rustc_serialize;
 extern crate rayon;
+extern crate unicase;
 // extern crate flame;
 // extern crate rsgenetic;
 
@@ -126,10 +127,12 @@ fn main() {
 
     info!("Most recent changeset: {}", mostrecent_changeset(username.clone()));
 
-    if all_changesets(username.clone()).len() >= 2 {
-        let mut chsets = all_changesets(username).into_iter();
 
-        let a = chsets.next().unwrap().clone();
+        let mut chsets = all_changesets(username).into_iter();
+        let a = match chsets.next() {
+            Some(next_one) => next_one,
+            None => Changeset { .. Default::default() },
+        };
         let a_local_content: Vec<u8> = a.clone()
             .entries
             .into_iter()
@@ -137,7 +140,10 @@ fn main() {
             .flat_map(|f| f.file.local_content )
             .collect();
 
-        let b = chsets.next().unwrap().clone();
+        let b = match chsets.next() {
+            Some(next_one) => next_one,
+            None => Changeset { .. Default::default() },
+        };
         let b_local_content: Vec<u8> = b
             .entries
             .into_iter()
@@ -150,7 +156,6 @@ fn main() {
                 String::from_utf8(a_local_content).unwrap(),
                 String::from_utf8(b_local_content).unwrap(),
                 ""));
-    }
 
     // let mut server = Nickel::new();
     // server.utilize(router! {
