@@ -5,7 +5,7 @@
 
 # Set Rust default environment:
 export RUST_BACKTRACE=1
-export RUST_LOG=yak=info
+export RUST_LOG=yak=debug
 
 
 usage () {
@@ -42,4 +42,8 @@ case "$1" in
         ;;
 esac
 
-cargo "${cmd}" -- "$2"
+if [ -z "$2" ]; then
+    cargo "${cmd}"
+else
+    cargo "${cmd}" -- "$2"
+fi
