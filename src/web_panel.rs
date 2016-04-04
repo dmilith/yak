@@ -96,7 +96,7 @@ fn chgset_history_page(context: Context, response: Response) {
  */
 pub fn start() {
     let server_result = Server {
-        host: 3000.into(), /*Turn a port number into an IPV4 host address (0.0.0.0:8080 in this case). */
+        host: root_default_http_port().into(), /*Turn a port number into an IPV4 host address (0.0.0.0:8080 in this case). */
         handlers: insert_routes!{
             /* route scenarios */
             TreeRouter::new() => {
