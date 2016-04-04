@@ -21,6 +21,11 @@ pub fn root_failed_no_uuud_given_uuid() -> Uuid {
 }
 
 
+pub fn root_failed_no_next_item_uuid() -> Uuid {
+    /* root */ Uuid::parse_str("FA170003-ff55-4913-94fa-000000000000").unwrap()
+}
+
+
 pub fn root_default_http_port() -> u16 {
     3000
 }
