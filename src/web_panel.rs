@@ -1,8 +1,7 @@
 use process::*;
 
+use std::str::FromStr;
 use std::error::Error;
-// use std::sync::RwLock;
-// use std::collections::btree_map::{BTreeMap, Iter};
 use unicase::UniCase;
 
 use rustful::{
@@ -52,16 +51,58 @@ fn index_page(context: Context, response: Response) {
 }
 
 
+/* HTTP path with params: /diff/:hostname/:username/:uuid_ch1/:uuid_ch2 */
 fn chgset_diff_page(context: Context, response: Response) {
-    let user = match context.variables.get("username") {
-        Some(name) => name,
-        None => "nobody".into(),
+    let hostname = match context.variables.get("hostname") {
+        Some(name) => name.to_string(),
+        None => "s0".to_string(),
     };
-    let all = all_changesets(user.to_string())
+    let username = match context.variables.get("username") {
+        Some(name) => name.to_string(),
+        None => "nobody".to_string(),
+    };
+    let uuid1 = match context.variables.get("uuid_ch1") {
+        Some(uuid) => Uuid::from_str(uuid.as_ref()).unwrap_or(root_invalid_uuid()),
+        None => root_invalid_uuid(),
+    };
+    let uuid2 = match context.variables.get("uuid_ch2") {
+        Some(uuid) => Uuid::from_str(uuid.as_ref()).unwrap_or(root_invalid_uuid()),
+        None => root_invalid_uuid(),
+    };
+
+    let mut chsets = all_changesets(username.clone()).into_iter()
+        .filter(|e| e.uuid == uuid1 || e.uuid == uuid2);
+
+    let a = match chsets.next() {
+        Some(next_one) => next_one,
+        None => Changeset { .. Default::default() },
+    };
+    let a_local_content: Vec<u8> = a.clone()
+        .entries
         .into_iter()
-        .map(|e| e.to_string() + "<br/><hr>")
-        .collect::<String>();
-    response.send(format!("<div>Listing timestamp sorted history:<br/>{}</div>", all));
+        // .filter(|f| f.file.path.ends_with(".php") )
+        .flat_map(|f| f.file.local_content )
+        .collect();
+
+    let b = match chsets.next() {
+        Some(next_one) => next_one,
+        None => Changeset { .. Default::default() },
+    };
+    let b_local_content: Vec<u8> = b.clone()
+        .entries
+        .into_iter()
+        // .filter(|f| f.file.path.ends_with(".php") )
+        .flat_map(|f| f.file.local_content )
+        .collect();
+
+    print_difference(
+        calculate_difference(
+            String::from_utf8(a_local_content).unwrap(),
+            String::from_utf8(b_local_content).unwrap(),
+            ""));
+
+    let all = vec!(a.clone(), b.clone());
+    response.send(format!("<html><body><div>Amount of items: {}</div><div class=\"item\">{}</div></body></html>", all.len(), a.to_string()),);
 }
 
 
