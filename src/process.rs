@@ -246,7 +246,7 @@ pub fn process_domain(path: &Path) -> Option<DomainEntry> {
                                 .connect_timeout(root_default_connection_timeout())
                                 .ssl_verifypeer(false)
                                 .get(format!("{}://{}{}", protocol, domain, request_path))
-                                .header("User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:10.0) Gecko/20100101 Firefox/10.0")
+                                .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_4) AppleWebKit/601.5.17 (KHTML, like Gecko) Version/9.1 Safari/601.5.17")
                                 .exec() {
                                 Ok(resp) => {
                                     let end = precise_time_ns();
