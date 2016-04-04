@@ -51,7 +51,7 @@ fn index_page(context: Context, response: Response) {
     response.send(format!("Hello, {}!", person));
 }
 
-/* HTTP path with params: /diff/:hostname/:username/:uuid_ch1/:uuid_ch2 */
+/* HTTP path with params: /diff/:hostname/:username/:uuid1/:uuid2 */
 fn chgset_diff_page(context: Context, response: Response) {
     let hostname = match context.variables.get("hostname") {
         Some(name) => name.to_string(),
@@ -61,14 +61,15 @@ fn chgset_diff_page(context: Context, response: Response) {
         Some(name) => name.to_string(),
         None => "nobody".to_string(),
     };
-    let uuid1 = match context.variables.get("uuid_ch1") {
-        Some(uuid) => Uuid::from_str(uuid.as_ref()).unwrap_or(root_invalid_uuid()),
-        None => root_invalid_uuid(),
+    let uuid1 = match context.variables.get("uuid1") {
+        Some(uuid) => Uuid::from_str(uuid.to_string().as_ref()).unwrap_or(root_failed_parse_from_string_to_uuid_uuid()),
+        None => root_failed_no_uuud_given_uuid(),
     };
-    let uuid2 = match context.variables.get("uuid_ch2") {
-        Some(uuid) => Uuid::from_str(uuid.as_ref()).unwrap_or(root_invalid_uuid()),
-        None => root_invalid_uuid(),
+    let uuid2 = match context.variables.get("uuid2") {
+        Some(uuid) => Uuid::from_str(uuid.to_string().as_ref()).unwrap_or(root_failed_parse_from_string_to_uuid_uuid()),
+        None => root_failed_no_uuud_given_uuid(),
     };
+    debug!("Params for chgset_diff_page: hn: {}, un: {}, uuid1: {}, uuid2: {}", hostname, username, uuid1, uuid2);
 
     let mut chsets = all_changesets(username.clone()).into_iter()
         .filter(|e| e.uuid == uuid1 || e.uuid == uuid2);
@@ -158,13 +159,13 @@ pub fn start() {
                 "/history/:hostname/:username" => Get: Api(Some(chgset_history_page)),
 
                 /* render history of given changeset of specified user on specified host */
-                "/history/:hostname/:username/:uuid_ch1" => Get: Api(Some(chgset_history_page)),
+                "/history/:hostname/:username/:uuid1" => Get: Api(Some(chgset_history_page)),
 
                 /* show details of given changeset. */
-                "/chgset/:hostname/:username/:uuid_ch1" => Get: Api(Some(chgset_show_page)),
+                "/chgset/:hostname/:username/:uuid1" => Get: Api(Some(chgset_show_page)),
 
                 /* diff changesets with given uuids of specified user on specified host: */
-                "/diff/:hostname/:username/:uuid_ch1/:uuid_ch2" => Get: Api(Some(chgset_diff_page)),
+                "/diff/:hostname/:username/:uuid1/:uuid2" => Get: Api(Some(chgset_diff_page)),
 
                 /* default route */
                 "*" => Get: Api(Some(index_page)),
