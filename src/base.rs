@@ -11,6 +11,15 @@ pub fn root_invalid_uuid() -> Uuid {
     /* root */ Uuid::parse_str("deadbeef-ff55-4913-94fa-000000000000").unwrap()
 }
 
+pub fn root_failed_parse_from_string_to_uuid_uuid() -> Uuid {
+    /* root */ Uuid::parse_str("FA170001-ff55-4913-94fa-000000000000").unwrap()
+}
+
+
+pub fn root_failed_no_uuud_given_uuid() -> Uuid {
+    /* root */ Uuid::parse_str("FA170002-ff55-4913-94fa-000000000000").unwrap()
+}
+
 
 pub fn root_default_http_port() -> u16 {
     3000
