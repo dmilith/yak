@@ -117,54 +117,6 @@ fn main() {
     let end = precise_time_ns();
     info!("Traverse for: {} files, (skipped: {} files), elapsed: {} miliseconds", files_processed.load(Ordering::SeqCst), files_skipped.load(Ordering::SeqCst), (end - start) / 1000 / 1000);
 
-    let username = "admin".to_string();
-    info!("All '{}' changesets:\n{}",
-        username.clone(),
-        all_changesets(username.clone())
-            .into_iter()
-            .map(|e| e.to_string() + "\n----\n")
-            .collect::<String>());
-
-    info!("Most recent changeset: {}", mostrecent_changeset(username.clone()));
-
-
-        let mut chsets = all_changesets(username).into_iter();
-        let a = match chsets.next() {
-            Some(next_one) => next_one,
-            None => Changeset { .. Default::default() },
-        };
-        let a_local_content: Vec<u8> = a.clone()
-            .entries
-            .into_iter()
-            .filter(|f| f.file.path.ends_with(".php") )
-            .flat_map(|f| f.file.local_content )
-            .collect();
-
-        let b = match chsets.next() {
-            Some(next_one) => next_one,
-            None => Changeset { .. Default::default() },
-        };
-        let b_local_content: Vec<u8> = b
-            .entries
-            .into_iter()
-            .filter(|f| f.file.path.ends_with(".php") )
-            .flat_map(|f| f.file.local_content )
-            .collect();
-
-        print_difference(
-            calculate_difference(
-                String::from_utf8(a_local_content).unwrap(),
-                String::from_utf8(b_local_content).unwrap(),
-                ""));
-
-    // let mut server = Nickel::new();
-    // server.utilize(router! {
-    //     get "**" => |_req, _res| {
-    //         "Hello world!"
-    //     }
-    // });
-    // server.listen("127.0.0.1:6000");
-    web_panel::start();
 }
 
 
