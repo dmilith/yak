@@ -51,7 +51,6 @@ fn index_page(context: Context, response: Response) {
     response.send(format!("Hello, {}!", person));
 }
 
-
 /* HTTP path with params: /diff/:hostname/:username/:uuid_ch1/:uuid_ch2 */
 fn chgset_diff_page(context: Context, response: Response) {
     let hostname = match context.variables.get("hostname") {
@@ -102,8 +101,10 @@ fn chgset_diff_page(context: Context, response: Response) {
             String::from_utf8(b_local_content).unwrap(),
             ""));
 
-    let all = vec!(a.clone(), b.clone());
-    response.send(format!("<html><body><div>Amount of items: {}</div><div class=\"item\">{}</div></body></html>", all.len(), a.to_string()),);
+    fn div(content: String) -> String {
+        format!("<div class=\"item\">{}</div>", content)
+    }
+    response.send(format!("<html><body>{}{}</body></html>", div(a.to_string()), div(b.to_string())));
 }
 
 
