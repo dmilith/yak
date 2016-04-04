@@ -42,4 +42,4 @@ case "$1" in
         ;;
 esac
 
-cargo "${cmd}"
+cargo "${cmd}" -- "$2"
