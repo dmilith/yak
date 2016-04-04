@@ -76,7 +76,7 @@ fn chgset_diff_page(context: Context, response: Response) {
 
     let a = match chsets.next() {
         Some(next_one) => next_one,
-        None => Changeset { uuid: root_invalid_uuid(), parent: root_invalid_uuid(), .. Default::default() },
+        None => Changeset { uuid: root_failed_no_next_item_uuid(), parent: root_failed_no_next_item_uuid(), .. Default::default() },
     };
     let a_local_content: Vec<u8> = a.clone()
         .entries
@@ -88,7 +88,7 @@ fn chgset_diff_page(context: Context, response: Response) {
 
     let b = match chsets.next() {
         Some(next_one) => next_one,
-        None => Changeset { uuid: root_invalid_uuid(), parent: root_invalid_uuid(), .. Default::default() },
+        None => Changeset { uuid: root_failed_no_next_item_uuid(), parent: root_failed_no_next_item_uuid(), .. Default::default() },
     };
     let b_local_content: Vec<u8> = b.clone()
         .entries
