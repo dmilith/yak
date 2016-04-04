@@ -1,54 +1,123 @@
+use process::*;
+
 use std::error::Error;
-use rustful::{Server, Context, Response, TreeRouter};
+// use std::sync::RwLock;
+// use std::collections::btree_map::{BTreeMap, Iter};
+use unicase::UniCase;
+
+use rustful::{
+    Server,
+    Context,
+    Response,
+    Handler,
+    TreeRouter
+};
+use rustful::header::{
+    ContentType,
+    AccessControlAllowOrigin,
+    AccessControlAllowMethods,
+    AccessControlAllowHeaders,
+    Host
+};
+use rustful::StatusCode;
 
 
-/*
+/* API endpoint with an optional action passed as a function: */
+struct Api(Option<fn(Context, Response)>);
+
+impl Handler for Api {
+    fn handle_request(&self, context: Context, mut response: Response) {
+        /* collect the accepted methods from the provided hyperlinks */
+        let mut methods: Vec<_> = context.hyperlinks.iter().filter_map(|l| l.method.clone()).collect();
+        methods.push(context.method.clone());
+
+        /* setup cross origin resource sharing */
+        response.headers_mut().set(AccessControlAllowOrigin::Any);
+        response.headers_mut().set(AccessControlAllowMethods(methods));
+        response.headers_mut().set(AccessControlAllowHeaders(vec![UniCase("content-type".into())]));
+
+        if let Some(action) = self.0 {
+            action(context, response);
+        }
+    }
+}
 
 
-HTTP PARAMS API use cases:
-
-        http://localhost
-                        /chgset/:username                     - shows history of all user changes between changesets
-                        /chgset/:username/:uuid_ch1/:uuid_ch2 - shows difference between changeset uuid_ch1 and uuid_ch2
-                        /chgset/:username/:timestamp          - shows all user changesets changes with exactly same or
-                                                                bigger timestamp
-                        /chgset/history/:username             - retrospective mode. Renders full user changeset history
-
-
- */
-
-
-fn say_hello(context: Context, response: Response) {
-    //Get the value of the path variable `:person`, from below.
+fn index_page(context: Context, response: Response) {
     let person = match context.variables.get("person") {
         Some(name) => name,
         None => "stranger".into()
     };
-
-    //Use the name from the path variable to say hello.
     response.send(format!("Hello, {}!", person));
 }
 
 
+fn chgset_diff_page(context: Context, response: Response) {
+    let user = match context.variables.get("username") {
+        Some(name) => name,
+        None => "nobody".into(),
+    };
+    let all = all_changesets(user.to_string())
+        .into_iter()
+        .map(|e| e.to_string() + "<br/><hr>")
+        .collect::<String>();
+    response.send(format!("<div>Listing timestamp sorted history:<br/>{}</div>", all));
+}
+
+
+fn chgset_show_page(context: Context, response: Response) {
+    let user = match context.variables.get("username") {
+        Some(name) => name,
+        None => "nobody".into(),
+    };
+    let all = all_changesets(user.to_string())
+        .into_iter()
+        .map(|e| e.to_string() + "<br/><hr>")
+        .collect::<String>();
+    response.send(format!("<div>Listing timestamp sorted history:<br/>{}</div>", all));
+}
+
+
+fn chgset_history_page(context: Context, response: Response) {
+    let user = match context.variables.get("username") {
+        Some(name) => name,
+        None => "nobody".into(),
+    };
+    let all = all_changesets(user.to_string())
+        .into_iter()
+        .map(|e| e.to_string() + "<br/><hr>")
+        .collect::<String>();
+    response.send(format!("<div>Listing timestamp sorted history:<br/>{}</div>", all));
+}
+
+
+/*
+    Main Http server code:
+ */
 pub fn start() {
-    //Build and run the server.
     let server_result = Server {
-        //Turn a port number into an IPV4 host address (0.0.0.0:8080 in this case).
-        host: 3000.into(),
-
-        //Create a TreeRouter and fill it with handlers.
+        host: 3000.into(), /*Turn a port number into an IPV4 host address (0.0.0.0:8080 in this case). */
         handlers: insert_routes!{
+            /* route scenarios */
             TreeRouter::new() => {
-                //Handle requests for root...
-                Get: say_hello,
+                /* render history of all user changesets */
+                "/history/:hostname/:username" => Get: Api(Some(chgset_history_page)),
 
-                //...and one level below.
-                //`:person` is a path variable and it will be accessible in the handler.
-                ":person" => Get: say_hello
+                /* render history of given changeset of specified user on specified host */
+                "/history/:hostname/:username/:uuid_ch1" => Get: Api(Some(chgset_history_page)),
+
+                /* show details of given changeset. */
+                "/chgset/:hostname/:username/:uuid_ch1" => Get: Api(Some(chgset_show_page)),
+
+                /* diff changesets with given uuids of specified user on specified host: */
+                "/diff/:hostname/:username/:uuid_ch1/:uuid_ch2" => Get: Api(Some(chgset_diff_page)),
+
+                /* default route */
+                "*" => Get: Api(Some(index_page)),
+                Get: Api(Some(index_page)),
             }
         },
 
-        //Use default values for everything else.
         ..Server::default()
     }.run();
 
