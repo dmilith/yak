@@ -28,3 +28,4 @@ flate2 = { version = "0.2", features = ["zlib"], default-features = false }
 rayon = "0.3"
 cld2 = "0.1"
 rustful = "0.8"
+unicase = "1.4"
