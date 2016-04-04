@@ -75,7 +75,7 @@ fn chgset_diff_page(context: Context, response: Response) {
 
     let a = match chsets.next() {
         Some(next_one) => next_one,
-        None => Changeset { .. Default::default() },
+        None => Changeset { uuid: root_invalid_uuid(), parent: root_invalid_uuid(), .. Default::default() },
     };
     let a_local_content: Vec<u8> = a.clone()
         .entries
@@ -83,10 +83,11 @@ fn chgset_diff_page(context: Context, response: Response) {
         // .filter(|f| f.file.path.ends_with(".php") )
         .flat_map(|f| f.file.local_content )
         .collect();
+    debug!("A: local content DBG: {:?}", String::from_utf8(a_local_content.clone()));
 
     let b = match chsets.next() {
         Some(next_one) => next_one,
-        None => Changeset { .. Default::default() },
+        None => Changeset { uuid: root_invalid_uuid(), parent: root_invalid_uuid(), .. Default::default() },
     };
     let b_local_content: Vec<u8> = b.clone()
         .entries
@@ -94,6 +95,16 @@ fn chgset_diff_page(context: Context, response: Response) {
         // .filter(|f| f.file.path.ends_with(".php") )
         .flat_map(|f| f.file.local_content )
         .collect();
+    debug!("B local content DBG: {:?}", String::from_utf8(b_local_content.clone()));
+
+    /*
+        TODO:
+            - local_content diff
+            - http_content diff
+            - https_content diff
+            - encoding diff
+            - language diff
+    */
 
     print_difference(
         calculate_difference(
