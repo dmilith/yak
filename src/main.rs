@@ -50,8 +50,7 @@ fn main() {
     env_logger::init().unwrap();
 
     for arg in env::args() {
-        debug!("ARG: {}", arg);
-        match arg.as_ref() {
+        match arg.as_str() {
             "api" | "www" | "web" | "server" | "s" => {
                 info!("Starting Http service on port: {}", root_default_http_port());
                 web_panel::start();
@@ -121,9 +120,9 @@ fn main_traverser() {
                     }
                 }
 
-                /* write changeset serialized to json */
-                let (file_name, bytes_written) = store_changeset_json(user.name().to_string(), changeset.clone());
-                info!("Changeset(json) stored: {} ({} bytes)", file_name, bytes_written);
+                // /* write changeset serialized to json */
+                // let (file_name, bytes_written) = store_changeset_json(user.name().to_string(), changeset.clone());
+                // info!("Changeset(json) stored: {} ({} bytes)", file_name, bytes_written);
 
                 /* now write compressed binary changeset */
                 let (file_name, bytes_written) = store_changeset(user.name().to_string(), changeset);
