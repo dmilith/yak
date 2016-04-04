@@ -31,6 +31,16 @@ pub fn root_default_http_port() -> u16 {
 }
 
 
+pub fn root_default_connection_timeout() -> usize {
+    2500
+}
+
+
+pub fn root_default_timeout() -> usize {
+    5000
+}
+
+
 pub fn invalid_changeset() -> Changeset {
     Changeset{
         parent: root_invalid_uuid(),

@@ -242,8 +242,8 @@ pub fn process_domain(path: &Path) -> Option<DomainEntry> {
                             let start = precise_time_ns();
                             match http::handle()
                                 .follow_location(0)
-                                .timeout(10000)
-                                .connect_timeout(5000)
+                                .timeout(root_default_timeout())
+                                .connect_timeout(root_default_connection_timeout())
                                 .ssl_verifypeer(false)
                                 .get(format!("{}://{}{}", protocol, domain, request_path))
                                 .header("User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:10.0) Gecko/20100101 Firefox/10.0")
