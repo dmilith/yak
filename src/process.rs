@@ -132,7 +132,7 @@ pub fn mostrecent_changeset(user_name: String) -> Changeset {
 
 pub fn process_file(abs_path: &str, f: &File) -> Result<FileEntry, String> {
     if valid_file_extensions(abs_path) {
-        let bytes_to_read = 65535u64;
+        let bytes_to_read = 131070u64; /* 128KiB */
         let metadata = match f.metadata() {
             Ok(some) => some,
             Err(err) => return Err(format!("Failed to read metadata of path: {}. Cause: {}", abs_path, err)),
