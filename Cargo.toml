@@ -1,11 +1,11 @@
 [package]
 name = "yak"
-version = "0.4.0"
+version = "0.4.1"
 authors = ["Daniel (dmilith) Dettlaff <dmilith@me.com>"]
 
 
 [dependencies]
-uuid = "0.1"
+uuid = "0.1" # frozen with 0.1, 0.2 causes trouble
 walkdir = "0.1"
 encoding = "0.2"
 ammonia = "0.1"
