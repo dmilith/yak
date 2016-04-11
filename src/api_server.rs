@@ -29,6 +29,7 @@ impl Handler for Api {
         /* collect the accepted methods from the provided hyperlinks */
         let mut methods: Vec<_> = context.hyperlinks.iter().filter_map(|l| l.method.clone()).collect();
         methods.push(context.method.clone());
+        debug!("methods available for handle: {:?}", methods);
 
         /* setup cross origin resource sharing */
         response.headers_mut().set(AccessControlAllowOrigin::Any);
@@ -51,6 +52,17 @@ fn index_page(context: Context, response: Response) {
     };
     response.send(format!("Hello, {}!", person));
 }
+
+
+pub struct ContentScout {
+    pub file: Vec<u8>,
+    pub http: String,
+    pub https: String,
+    pub encoding: String,
+    pub modified: i64,
+    pub sha: String,
+}
+
 
 /* HTTP path with params: /diff/:hostname/:username/:uuid1/:uuid2 */
 fn chgset_diff_page(context: Context, response: Response) {

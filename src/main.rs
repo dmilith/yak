@@ -36,10 +36,10 @@ mod structs;
 mod utils;
 mod base;
 mod process;
-mod web_panel;
+mod api_server;
 
 use process::*;
-use web_panel::start;
+use api_server::start;
 
 use rayon::prelude::*;
 use std::sync::Arc;
@@ -53,7 +53,7 @@ fn main() {
         match arg.as_str() {
             "api" | "www" | "web" | "server" | "s" => {
                 info!("Starting Http service on port: {}", root_default_http_port());
-                web_panel::start();
+                api_server::start();
             },
 
             _ => {},
