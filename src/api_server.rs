@@ -48,21 +48,11 @@ impl Handler for Api {
 
 
 fn index_page(context: Context, response: Response) {
-    let person = match context.variables.get("person") {
+    let username = match context.variables.get("username") {
         Some(name) => name,
         None => "stranger".into()
     };
-    response.send(format!("Hello, {}!", person));
-}
-
-
-pub struct ContentScout {
-    pub file: Vec<u8>,
-    pub http: String,
-    pub https: String,
-    pub encoding: String,
-    pub modified: i64,
-    pub sha: String,
+    response.send(format!("{{\"welcome\": \"{}\"}}", username));
 }
 
 
@@ -128,10 +118,7 @@ fn chgset_diff_page(context: Context, response: Response) {
             String::from_utf8(b_local_content).unwrap(),
             ""));
 
-    fn div(content: String) -> String {
-        format!("<div class=\"item\">{}</div>", content)
-    }
-    response.send(format!("<html><body>{}{}</body></html>", div(a.to_string()), div(b.to_string())));
+    response.send(format!("[{},{}]", a.to_string(), b.to_string()));
 }
 
 
@@ -183,8 +170,8 @@ pub fn start() {
                 "/diff/:hostname/:username/:uuid1/:uuid2" => Get: Api(Some(chgset_diff_page)),
 
                 /* default route */
+                ":username" => Get: Api(Some(index_page)),
                 "*" => Get: Api(Some(index_page)),
-                Get: Api(Some(index_page)),
             }
         },
 
