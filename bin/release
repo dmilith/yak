@@ -29,6 +29,9 @@ cd /Software/Libressl/lib/
 for libr in libcrypto.so libcrypto.so.37 libcrypto.so.37.0.0 libssl.so libssl.so.38 libssl.so.38.0.0; do
     cp -v ./${libr} /Software/${PN}/lib/
 done
+ln -s libssl.so.38 libssl.so.1.0.0
+ln -s libcrypto.so.37 libcrypto.so.1.0.0
+
 cd /Software/Rust/lib/
 rust_postfix="$(ls libstd*.so | sed -e 's/.*-//')"
 cp -v ./libstd-${rust_postfix} /Software/${PN}/lib/
