@@ -35,7 +35,9 @@ impl Handler for Api {
         response.headers_mut().set(AccessControlAllowOrigin::Any);
         response.headers_mut().set(AccessControlAllowMethods(methods));
         response.headers_mut().set(AccessControlAllowHeaders(vec![UniCase("content-type".into())]));
-        response.headers_mut().set(ContentType(content_type!(Text / Html; Charset = Utf8)));
+        // response.headers_mut().set(ContentType(content_type!(Text / Html; Charset = Utf8)));
+        response.headers_mut().set(ContentType(content_type!(Application / Json; Charset = Utf8)));
+
 
         if let Some(action) = self.0 {
             debug!("handling response with headers: {:?}", response.headers());
