@@ -37,6 +37,7 @@ impl Handler for Api {
         response.headers_mut().set(ContentType(content_type!(Text / Html; Charset = Utf8)));
 
         if let Some(action) = self.0 {
+            debug!("handling response with headers: {:?}", response.headers());
             action(context, response);
         }
     }
